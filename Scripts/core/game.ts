@@ -34,7 +34,8 @@ import gameObject = objects.gameObject;
 
 // Setup a Web Worker for Physijs
 Physijs.scripts.worker = "Scripts/lib/Physijs/physijs_worker.js";
-Physijs.scripts.ammo = "Scripts/lib/Physijs/examples/js/ammo.js";
+Physijs.scripts.ammo = "Scripts/lib/Physijs/builds/ammo.js";
+
 
 
 // setup an IIFE structure (Immediately Invoked Function Expression)
