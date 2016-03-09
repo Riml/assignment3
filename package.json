@@ -1,0 +1,29 @@
+{
+  "name": "comp392-lesson8",
+  "version": "1.0.0",
+  "description": "COMP392 - Assignment 3 for Centennial College",
+  "main": "game.js",
+  "dependencies": {
+    "typescript": "latest"
+  },
+  "devDependencies": {
+    "gulp": "latest",
+    "gulp-connect": "latest",
+    "gulp-debug": "latest",
+    "gulp-inject": "latest",
+    "gulp-open": "latest",
+    "gulp-sourcemaps": "latest",
+    "gulp-typescript": "latest",
+    "gulp-util": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbendercode/comp392-assignment3.git"
+  },
+  "author": "Josh Bender",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jbendercode/comp392-assignment3/issues"
+  },
+  "homepage": "https://github.com/jbendercode/comp392-assignment3#readme"
+}
