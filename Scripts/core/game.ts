@@ -33,12 +33,12 @@ import Clock = THREE.Clock;
 import gameObject = objects.gameObject;
 
 // Setup a Web Worker for Physijs
-Physijs.scripts.worker = "Scripts/lib/Physijs/physijs_worker.js";
-Physijs.scripts.ammo = "Scripts/lib/Physijs/builds/ammo.js";
+Physijs.scripts.worker = "/Scripts/lib/Physijs/physijs_worker.js";
+Physijs.scripts.ammo = "/Scripts/lib/Physijs/builds/ammo.js";
 
 
 
-// setup an IIFE structure (Immediately Invoked Function Expression)
+// setup an IIFE structure (Immediately Invoked Function Expression)!
 var game = (() => {
 
     // declare game objects
