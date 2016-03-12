@@ -1,29 +1,29 @@
 {
   "name": "comp392-lesson8",
   "version": "1.0.0",
-  "description": "COMP392 - Assignment 3 for Centennial College",
+  "description": "COMP392-Lesson 8 for Centennial College",
   "main": "game.js",
   "dependencies": {
-    "typescript": "latest"
+    "typescript": "^1.8.7"
   },
   "devDependencies": {
-    "gulp": "latest",
-    "gulp-connect": "latest",
-    "gulp-debug": "latest",
-    "gulp-inject": "latest",
-    "gulp-open": "latest",
-    "gulp-sourcemaps": "latest",
-    "gulp-typescript": "latest",
-    "gulp-util": "latest"
+    "gulp": "^3.9.1",
+    "gulp-connect": "^2.3.1",
+    "gulp-debug": "^2.1.2",
+    "gulp-inject": "^3.0.0",
+    "gulp-open": "^1.0.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-typescript": "^2.10.0",
+    "gulp-util": "^3.0.7"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jbendercode/comp392-assignment3.git"
+    "url": "git+https://github.com/CentennialCollege/COMP392-Lesson8.git"
   },
-  "author": "Josh Bender",
+  "author": "Tom Tsiliopoulos",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jbendercode/comp392-assignment3/issues"
+    "url": "https://github.com/CentennialCollege/COMP392-Lesson8/issues"
   },
-  "homepage": "https://github.com/jbendercode/comp392-assignment3#readme"
+  "homepage": "https://github.com/CentennialCollege/COMP392-Lesson8#readme"
 }

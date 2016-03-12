@@ -1,13 +1,13 @@
 {
   "name": "comp392-lesson8",
   "authors": [
-    "Josh Bender <jbendercode@gmail.com>"
+    "Tom Tsiliopoulos <tsiliopoulos@hotmail.com>"
   ],
-  "description": "COMP392 Assignment 3 for Advanced Graphics",
-  "main": "game.js",
+  "description": "COMP392 Lesson 8 for Advanced Graphics",
+  "main": "",
   "moduleType": [],
   "license": "MIT",
-  "homepage": "https://github.com/jbendercode/assignment3-comp392",
+  "homepage": "https://github.com/CentennialCollege/COMP392-Lesson8",
   "ignore": [
     "**/.*",
     "node_modules",
