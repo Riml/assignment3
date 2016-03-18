@@ -4,35 +4,26 @@ var objects;
     var KeyboardControls = (function () {
         // CONSTRUCTOR ++++++++++++++++++++++++++    
         function KeyboardControls() {
+            this.enabled = false;
             document.addEventListener('keydown', this.onKeyDown.bind(this), false);
             document.addEventListener('keyup', this.onKeyUp.bind(this), false);
         }
-        //PUBLIC METHODS +++++++++++++++++++++++++++++++++++++++
-        /* public enabled():void{
-             console.log();
-              document.addEventListener('keydown',this.onKeyDown.bind(this),false);
-              document.addEventListener('keyup',this.onKeyUp.bind(this),false);
-         }
-         public disabled():void{
-              document.removeEventListener('keydown',this.onKeyDown.bind(this),false);
-              document.removeEventListener('keyup',this.onKeyUp.bind(this),false);
-         }
-         */
-        KeyboardControls.prototype.onKeyDown = function (event, KeyboardEvent) {
-            switch (event.KeyCode) {
-                case 38: //up
+        // PUBLIC METHODS
+        KeyboardControls.prototype.onKeyDown = function (event) {
+            switch (event.keyCode) {
+                case 38: /*up arrow*/
                 case 87:
                     this.moveForward = true;
                     break;
-                case 37: //left
+                case 37: /*left arrow*/
                 case 65:
                     this.moveLeft = true;
                     break;
-                case 40: //back
+                case 40: /*down arrow*/
                 case 83:
                     this.moveBackward = true;
                     break;
-                case 39: //up
+                case 39: /*right arrow*/
                 case 68:
                     this.moveRight = true;
                     break;
@@ -40,23 +31,22 @@ var objects;
                     this.jump = true;
                     break;
             }
-            ;
         };
-        KeyboardControls.prototype.onKeyUp = function (event, KeyboardEvent) {
-            switch (event.KeyCode) {
-                case 38: //up
+        KeyboardControls.prototype.onKeyUp = function (event) {
+            switch (event.keyCode) {
+                case 38: /*up arrow*/
                 case 87:
                     this.moveForward = false;
                     break;
-                case 37: //left
+                case 37: /*left arrow*/
                 case 65:
                     this.moveLeft = false;
                     break;
-                case 40: //back
+                case 40: /*down arrow*/
                 case 83:
                     this.moveBackward = false;
                     break;
-                case 39: //up
+                case 39: /*right arrow*/
                 case 68:
                     this.moveRight = false;
                     break;
@@ -64,7 +54,6 @@ var objects;
                     this.jump = false;
                     break;
             }
-            ;
         };
         return KeyboardControls;
     }());
