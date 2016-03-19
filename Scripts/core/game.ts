@@ -121,7 +121,7 @@ var game = (() => {
             document.addEventListener('webkitpointerlockerror', pointerLockError);
         }
 
-        // Scene changes for Physijs
+        //-------------------------- Scene changes for Physijs-------------------------------------------------------
         scene.name = "Main";
         scene.fog = new THREE.Fog(0xffffff, 0, 750);
         scene.setGravity(new THREE.Vector3(0, -10, 0));
@@ -185,10 +185,11 @@ var game = (() => {
         }
         */
         
-        groundGeometry = new BoxGeometry(24* TILE_SIZE, 1, 46* TILE_SIZE);
+        groundGeometry = new BoxGeometry(24* TILE_SIZE*4, 1, 46* TILE_SIZE*4);
         groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0, 0);
         ground = new Physijs.ConvexMesh(groundGeometry, groundPhysicsMaterial, 0);
         ground.receiveShadow = true;
+        //ground.position.set(24* TILE_SIZE/2,0,46* TILE_SIZE/2);
         ground.name = "Ground";
         scene.add(ground);
         console.log("Added Burnt Ground to scene");
@@ -199,7 +200,7 @@ var game = (() => {
         
         var myPlayer:Mesh;
         
-        var myPlayerGeometry = new SphereGeometry(2, 20, 20);
+        var myPlayerGeometry = new SphereGeometry(2.01, 20, 20);
         var myPlayerMaterial = new LambertMaterial({ color: 0xFFffFF, map: playerTexture});
 
         myPlayer = new Mesh(myPlayerGeometry, myPlayerMaterial);
@@ -207,9 +208,9 @@ var game = (() => {
         
         
         playerGeometry = new SphereGeometry(2, 20, 20);
-        playerMaterial = Physijs.createMaterial(new LambertMaterial({ color: 0xFFffFF, wireframe:true}), 0.4, 0);
+        playerMaterial = Physijs.createMaterial(new LambertMaterial({ color: 0xFFffFF}), 0.4, 0);
 
-        player = new Physijs.BoxMesh(playerGeometry, playerMaterial, 5);
+        player = new Physijs.BoxMesh(playerGeometry, playerMaterial, 0.8);
         player.receiveShadow = true;
         player.castShadow = true;
        
@@ -226,16 +227,40 @@ var game = (() => {
         player.add(myPlayer);
         player.add(cylinder1);
         player.add(cylinder2);
-        player.position.set(0, 30, 10);
+        player.position.set(0, 30, 20);
         
         
         scene.add(player);
         console.log("Added Player to Scene");
         //---------------------------Level Creation-----------------------------------------------
-        createWall();
+            //horizontal
+        createWall(24,0,0,0,"wall-bottom-border");
+        createWall(10,8,8,0,"wall-h-1");
+        createWall(22,12,0,0,"wall-h-2");
+        createWall(20,16,4,0,"wall-h-3");
+        createWall(14,20,6,0,"wall-h-4");
+        createWall(6,24,0,0,"wall-h-5");
+        createWall(16,26,8,0,"wall-h-6");
+        createWall(4,28,4,0,"wall-h-7"); 
+        createWall(18,32,0,0,"wall-h-8"); 
+        createWall(24,46,0,0,"wall-top-border"); 
+           //vertical
+         
+       
+        createWall(46,0,0,1,"wall-left-border");
+        createWall(8,0,8,1,"wall-v-1");
+        createWall(6,0,14,1,"wall-v-2");
+        createWall(4,4,18,1,"wall-v-3");
+        createWall(4,8,22,1,"wall-v-4");
+        createWall(4,16,4,1,"wall-v-5");
+        createWall(4,20,6,1,"wall-v-6");
+        createWall(2,26,8,1,"wall-v-7");
+        createWall(4,32,18,1,"wall-v-8");
+        
+        createWall(46,0,24,1,"wall-right-border");
         
         //------------SETUP THE CAMER:create parent.child for camera-player-------------------------
-        setupCamera(); 
+        setupCamera();
         player.add(camera);
         //------------------------------------------------ Collision Check--------------------------
         player.addEventListener('collision', (event) => {
@@ -276,6 +301,8 @@ var game = (() => {
         control = new Control();
         addControl(control);
 
+
+       
         // Add framerate stats
         addStatsObject();
         console.log("Added Stats to scene...");
@@ -289,7 +316,8 @@ var game = (() => {
     //end of init
     
     // if not vertical, then horizontal
-    function createWall( wallLenght:number,  startTileX:number, startTileZ:number,vertical:number, name:string ){
+    function createWall( wallLenght:number, startTileX:number, startTileZ:number,vertical:number, name:string ){
+        wallLenght=TILE_SIZE*wallLenght;
         var thisWallTexture:Texture = new THREE.TextureLoader().load( "./Assets/Textures/ground1.jpg" );
         thisWallTexture.wrapS=THREE.RepeatWrapping;
         thisWallTexture.wrapT=THREE.RepeatWrapping;
@@ -306,11 +334,11 @@ var game = (() => {
         thisWallMaterial.bumpMap = thisWallTextureNormal;
         thisWallMaterial.bumpScale=1.2;
         
-        var thisWallGeometry = new BoxGeometry(wallLenght*vertical+0.1, 10, wallLenght*(1-vertical)+0.1);
-        var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0);
-        var wall = new Physijs.ConvexMesh(thisWallGeometry, thisWallPhysicsMaterial, 0);
+        var thisWallGeometry = new BoxGeometry(wallLenght*vertical+0.2, 10, wallLenght*(1-vertical)+0.2);
+        var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0.1);
+        var wall = new Physijs.BoxMesh(thisWallGeometry, thisWallPhysicsMaterial, 0);
         
-        wall.position.set(startTileX*TILE_SIZE - (wallLenght*vertical)/2,0,startTileZ*TILE_SIZE-(wallLenght*(1-vertical)));
+        wall.position.set(startTileX*TILE_SIZE + (wallLenght*vertical)/2-5,0.501,startTileZ*TILE_SIZE+(wallLenght*(1-vertical))/2-5);
         
         wall.receiveShadow = true;
         wall.name = "name";
@@ -377,6 +405,9 @@ var game = (() => {
 
         // render the scene
         renderer.render(scene, camera);
+        
+        console.log("Camera"
+         +"with x" + camera.rotation.x+" y:" + camera.rotation.y+" z:" + camera.rotation.z);
     }
     
     //check controls
@@ -458,8 +489,10 @@ var game = (() => {
     function setupCamera(): void {
         camera = new PerspectiveCamera(35, config.Screen.RATIO, 0.1, 100);
         camera.position.set(0, 9, 20);
-        camera.lookAt(player.position);
-        console.log("Finished setting up Camera...");
+        //camera.rotation.set(0,0,0);
+        //camera.lookAt(player.position);
+        console.log("Finished setting up Camera..."
+         +"with x" + camera.rotation.x+" y:" + camera.rotation.y+" z:" + camera.rotation.z);
     }
 
     window.onload = init;
