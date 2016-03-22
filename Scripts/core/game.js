@@ -21,7 +21,6 @@ var SpotLight = THREE.SpotLight;
 var PointLight = THREE.PointLight;
 var AmbientLight = THREE.AmbientLight;
 var Control = objects.Control;
-var GUI = dat.GUI;
 var Color = THREE.Color;
 var Vector3 = THREE.Vector3;
 var Face3 = THREE.Face3;
@@ -43,7 +42,6 @@ var game = (function () {
     var renderer;
     var camera;
     var control;
-    var gui;
     var stats;
     var blocker;
     var instructions;
@@ -68,11 +66,62 @@ var game = (function () {
     var directionLine;
     var playerTexture;
     var ambientLight;
+    var assests;
+    var canvas;
+    var stage;
+    var coin;
+    var scoreLabel;
+    var scoreValue;
     var TILE_SIZE; //to scale map(walls, hazards,ground and maybe skybox), should be constant
+    var manifest = [
+        { id: "land", src: "../../Assets/sound/Land.wav" }
+    ];
+    function setupScoreboard() {
+        scoreValue = 0;
+        scoreLabel = new createjs.Text("Score: " + scoreValue, "40px Arial", "#FFffFF");
+        scoreLabel.x = config.Screen.WIDTH * 0.1;
+        scoreLabel.y = (config.Screen.HEIGHT * 0.1) * 0.3;
+        stage.addChild(scoreLabel);
+    }
+    function preload() {
+        assests = new createjs.LoadQueue();
+        assests.installPlugin(createjs.Sound);
+        assests.on("complete", init, this);
+        assests.loadManifest(manifest);
+    }
+    function setupCanvas() {
+        canvas = document.getElementById("canvas");
+        canvas.setAttribute("width", config.Screen.WIDTH.toString());
+        canvas.setAttribute("height", (config.Screen.HEIGHT * 0.1).toString());
+        canvas.style.backgroundColor = '#001100';
+        stage = new createjs.Stage(canvas);
+    }
+    function addCoinMesh() {
+        var coinGeometry = new Geometry();
+        var coinMaterial = Physijs.createMaterial(new THREE.MeshPhongMaterial);
+        coin = new Physijs.ConvexMesh(coinGeometry, coinMaterial);
+        var coinLoader = new THREE.JSONLoader().load("./Assets/coin.json", function (geometry) {
+            coinMaterial = Physijs.createMaterial(new THREE.MeshPhongMaterial({ color: 0xbaddab }), 0.2, 0.2);
+            coin = new Physijs.ConvexMesh(geometry, coinMaterial, 1);
+        });
+        coin.receiveShadow = true;
+        coin.castShadow = true;
+        coin.name = "coin";
+        SetCoinPosition();
+    }
+    function SetCoinPosition() {
+        var randomx = Math.floor(Math.random() * 20) - 10;
+        var randomz = Math.floor(Math.random() * 20) - 10;
+        coin.position.set(randomx, 10, randomz);
+        scene.add(coin);
+    }
     function init() {
+        setupCanvas();
         // Create to HTMLElements
         blocker = document.getElementById("blocker");
         instructions = document.getElementById("instructions");
+        setupCanvas();
+        setupScoreboard();
         //check to see if pointerlock is supported
         havePointerLock = 'pointerLockElement' in document ||
             'mozPointerLockElement' in document ||
@@ -130,14 +179,14 @@ var game = (function () {
         ambientLight = new AmbientLight(0x777777);
         scene.add(ambientLight);
         // ----------------------------------------Burnt Ground-----------------------------------------------------------
-        var groundTexture = new THREE.TextureLoader().load("./Assets/Textures/ground1.jpg");
+        var groundTexture = new THREE.TextureLoader().load("./Assets/Textures/floor.png");
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
-        groundTexture.repeat.set(2, 2);
-        var groundTextureNormal = new THREE.TextureLoader().load("./Assets/Textures/ground1Normal.png");
+        groundTexture.repeat.set(20, 20);
+        var groundTextureNormal = new THREE.TextureLoader().load("./Assets/Textures/floorNormal.png");
         groundTextureNormal.wrapS = THREE.RepeatWrapping;
         groundTextureNormal.wrapT = THREE.RepeatWrapping;
-        groundTextureNormal.repeat.set(2, 2);
+        groundTextureNormal.repeat.set(20, 20);
         var groundMaterial = new THREE.MeshPhongMaterial;
         groundMaterial.map = groundTexture;
         groundMaterial.bumpMap = groundTextureNormal;
@@ -173,13 +222,13 @@ var game = (function () {
         player.name = "Player";
         var geometry = new THREE.CylinderGeometry(0.01, 1, 3, 3);
         var material = new THREE.MeshBasicMaterial({ color: 0xffff00, wireframe: true });
-        var cylinder1 = new THREE.Mesh(geometry, material);
-        var cylinder2 = new THREE.Mesh(geometry, material);
-        cylinder1.position.set(1, 1.47, 0);
-        cylinder2.position.set(-1, 1.47, 0);
+        var ear1 = new THREE.Mesh(geometry, material);
+        var ear2 = new THREE.Mesh(geometry, material);
+        ear1.position.set(1, 1.47, 0);
+        ear2.position.set(-1, 1.47, 0);
         player.add(myPlayer);
-        player.add(cylinder1);
-        player.add(cylinder2);
+        player.add(ear1);
+        player.add(ear2);
         player.position.set(0, 30, 20);
         scene.add(player);
         console.log("Added Player to Scene");
@@ -214,6 +263,7 @@ var game = (function () {
             if (event.name === "Ground") {
                 console.log("player hit the ground");
                 isGrounded = true;
+                createjs.Sound.play("land");
             }
             if (event.name === "Sphere") {
                 console.log("player hit the sphere");
@@ -227,6 +277,8 @@ var game = (function () {
         directionLine = new Line(directionLineGeometry, directionLineMaterial);
         player.add(directionLine);
         console.log("Added DirectionLine to the Player");
+        //random
+        addCoinMesh();
         // Sphere Object
         sphereGeometry = new SphereGeometry(2, 32, 32);
         sphereMaterial = Physijs.createMaterial(new LambertMaterial({ color: 0x00ff00 }), 0.4, 0);
@@ -238,9 +290,6 @@ var game = (function () {
         //scene.add(sphere);
         //console.log("Added Sphere to Scene");
         //---------------------------------- add controls-----------------------------------------------
-        gui = new GUI();
-        control = new Control();
-        addControl(control);
         // Add framerate stats
         addStatsObject();
         console.log("Added Stats to scene...");
@@ -253,19 +302,19 @@ var game = (function () {
     // if not vertical, then horizontal
     function createWall(wallLenght, startTileX, startTileZ, vertical, name) {
         wallLenght = TILE_SIZE * wallLenght;
-        var thisWallTexture = new THREE.TextureLoader().load("./Assets/Textures/ground1.jpg");
+        var thisWallTexture = new THREE.TextureLoader().load("./Assets/Textures/wall.png");
         thisWallTexture.wrapS = THREE.RepeatWrapping;
         thisWallTexture.wrapT = THREE.RepeatWrapping;
-        thisWallTexture.repeat.set(1, 1);
-        var thisWallTextureNormal = new THREE.TextureLoader().load("./Assets/Textures/ground1Normal.png");
+        thisWallTexture.repeat.set(wallLenght / 10, 1);
+        var thisWallTextureNormal = new THREE.TextureLoader().load("./Assets/Textures/wallNormal.png");
         thisWallTextureNormal.wrapS = THREE.RepeatWrapping;
         thisWallTextureNormal.wrapT = THREE.RepeatWrapping;
-        thisWallTextureNormal.repeat.set(1, 1);
+        thisWallTextureNormal.repeat.set(wallLenght / 10, 1);
         var thisWallMaterial = new THREE.MeshPhongMaterial;
         thisWallMaterial.map = thisWallTexture;
         thisWallMaterial.bumpMap = thisWallTextureNormal;
         thisWallMaterial.bumpScale = 1.2;
-        var thisWallGeometry = new BoxGeometry(wallLenght * vertical + 0.2, 10, wallLenght * (1 - vertical) + 0.2);
+        var thisWallGeometry = new BoxGeometry(wallLenght * vertical + 0.5, 20, wallLenght * (1 - vertical) + 0.5);
         var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0.1);
         var wall = new Physijs.BoxMesh(thisWallGeometry, thisWallPhysicsMaterial, 0);
         wall.position.set(startTileX * TILE_SIZE + (wallLenght * vertical) / 2 - 5, 0.501, startTileZ * TILE_SIZE + (wallLenght * (1 - vertical)) / 2 - 5);
@@ -302,9 +351,8 @@ var game = (function () {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-    function addControl(controlObject) {
-        /* ENTER CODE for the GUI CONTROL HERE */
+        canvas.style.width = "100%";
+        stage.update();
     }
     // Add Frame Rate Stats to the Scene
     function addStatsObject() {
@@ -319,6 +367,7 @@ var game = (function () {
     function gameLoop() {
         stats.update();
         checkControls();
+        stage.update();
         // render using requestAnimationFrame
         requestAnimationFrame(gameLoop);
         // render the scene
@@ -396,7 +445,7 @@ var game = (function () {
         console.log("Finished setting up Camera..."
             + "with x" + camera.rotation.x + " y:" + camera.rotation.y + " z:" + camera.rotation.z);
     }
-    window.onload = init;
+    window.onload = preload;
     return {
         scene: scene
     };
