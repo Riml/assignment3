@@ -50,9 +50,6 @@ var game = (function () {
     var groundPhysicsMaterial;
     var ground;
     var clock;
-    var playerGeometry;
-    var playerMaterial;
-    var player;
     var sphereGeometry;
     var sphereMaterial;
     var sphere;
@@ -64,7 +61,18 @@ var game = (function () {
     var directionLineMaterial;
     var directionLineGeometry;
     var directionLine;
-    var playerTexture;
+    //Player realted variables
+    var playerVisual;
+    var catEars;
+    var catTextures;
+    var catMaterials; // sounds creepy, but what to do
+    var currentCat; //0-fat,1-fast, 2-royal
+    var catMasses;
+    var catVelocities;
+    var currentCatMaterial;
+    var playerGeometry;
+    var playerMaterial;
+    var player;
     var ambientLight;
     var assests;
     var canvas;
@@ -218,27 +226,37 @@ var game = (function () {
         //ground.position.set(24* TILE_SIZE/2,0,46* TILE_SIZE/2);
         console.log("Added Burnt Ground to scene");
         // -------------------------------------------Player Object-----------------------------------------
-        playerTexture = new THREE.TextureLoader().load("./Assets/Textures/Cat.jpg");
-        var myPlayer;
+        catTextures = new Array(3);
+        catMaterials = new Array(3);
+        catEars = new Array(2);
+        catMasses = new Array(1000, 2, 1);
+        catVelocities = new Array(200000, 1000, 1500);
+        catTextures[0] = new THREE.TextureLoader().load("./Assets/Textures/Fur1.png");
+        catTextures[1] = new THREE.TextureLoader().load("./Assets/Textures/Fur2.png");
+        catTextures[2] = new THREE.TextureLoader().load("./Assets/Textures/Fur3.png");
+        currentCat = 0;
         var myPlayerGeometry = new SphereGeometry(2.01, 20, 20);
-        var myPlayerMaterial = new LambertMaterial({ color: 0xFFffFF, map: playerTexture });
-        myPlayer = new Mesh(myPlayerGeometry, myPlayerMaterial);
-        myPlayer.rotation.y = THREE.Math.degToRad(90);
+        catMaterials[0] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[0] });
+        catMaterials[1] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[1] });
+        catMaterials[2] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[2] });
+        currentCatMaterial = catMaterials[0];
+        playerVisual = new Mesh(myPlayerGeometry, currentCatMaterial);
+        playerVisual.rotation.y = THREE.Math.degToRad(90);
         playerGeometry = new SphereGeometry(2, 20, 20);
         playerMaterial = Physijs.createMaterial(new LambertMaterial({ color: 0xFFffFF }), 0.4, 0);
-        player = new Physijs.BoxMesh(playerGeometry, playerMaterial, 0.8);
+        player = new Physijs.BoxMesh(playerGeometry, playerMaterial, catMasses[currentCat]);
         player.receiveShadow = true;
         player.castShadow = true;
         player.name = "Player";
-        var geometry = new THREE.CylinderGeometry(0.01, 1, 3, 3);
-        var material = new THREE.MeshBasicMaterial({ color: 0xffff00, wireframe: true });
-        var ear1 = new THREE.Mesh(geometry, material);
-        var ear2 = new THREE.Mesh(geometry, material);
-        ear1.position.set(1, 1.47, 0);
-        ear2.position.set(-1, 1.47, 0);
-        player.add(myPlayer);
-        player.add(ear1);
-        player.add(ear2);
+        var geometry = new THREE.CylinderGeometry(0.01, 1, 3, 9);
+        var material = currentCatMaterial;
+        catEars[0] = new THREE.Mesh(geometry, material);
+        catEars[1] = new THREE.Mesh(geometry, material);
+        catEars[0].position.set(1, 1.47, 0);
+        catEars[1].position.set(-1, 1.47, 0);
+        player.add(playerVisual);
+        player.add(catEars[0]);
+        player.add(catEars[1]);
         player.position.set(5, 30, TILE_SIZE * 10);
         scene.add(player);
         console.log("Added Player to Scene");
@@ -332,6 +350,35 @@ var game = (function () {
         wall.name = "name";
         scene.add(wall);
     }
+    function createBreakableWall(startTileX, startTileZ, vertical) {
+        var bricksColumns = 5;
+        var brickRows = 8;
+        var bricksSize = TILE_SIZE / bricksColumns;
+        var thisWallTexture = new THREE.TextureLoader().load("./Assets/Textures/wall.png");
+        thisWallTexture.wrapS = THREE.RepeatWrapping;
+        thisWallTexture.wrapT = THREE.RepeatWrapping;
+        thisWallTexture.repeat.set(1, 1);
+        var thisWallTextureNormal = new THREE.TextureLoader().load("./Assets/Textures/wallNormal.png");
+        thisWallTextureNormal.wrapS = THREE.RepeatWrapping;
+        thisWallTextureNormal.wrapT = THREE.RepeatWrapping;
+        thisWallTextureNormal.repeat.set(1, 1);
+        var thisWallMaterial = new THREE.MeshPhongMaterial;
+        thisWallMaterial.map = thisWallTexture;
+        thisWallMaterial.bumpMap = thisWallTextureNormal;
+        thisWallMaterial.bumpScale = 1.2;
+        var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0.1);
+        for (var i = 0; i < brickRows; i++) {
+            for (var j = 0; j < bricksColumns; j++) {
+                var thisWallGeometry = new BoxGeometry(bricksSize * vertical + 0.1, 0.25, bricksSize * (1 - vertical) + 0.1);
+                var wall = new Physijs.BoxMesh(thisWallGeometry, thisWallPhysicsMaterial, 1);
+                wall.position.set(startTileX * bricksSize + (bricksSize * 2 * vertical) / 2, 1, startTileZ * bricksSize + (bricksSize * 2 * (1 - vertical)) / 2);
+            }
+        }
+        ;
+        wall.receiveShadow = true;
+        wall.name = "name";
+        scene.add(wall);
+    }
     //PointerLockChange Event Handler
     function pointerLockChange(event) {
         if (document.pointerLockElement === element) {
@@ -382,33 +429,61 @@ var game = (function () {
         requestAnimationFrame(gameLoop);
         // render the scene
         renderer.render(scene, camera);
-        console.log("Camera"
-            + "with x" + camera.rotation.x + " y:" + camera.rotation.y + " z:" + camera.rotation.z);
+        //console.log("Camera"
+        // +"with x" + camera.rotation.x+" y:" + camera.rotation.y+" z:" + camera.rotation.z);
+    }
+    function switchCurrentCat() {
+        if (keyboardControls.switchCat) {
+            console.log("Switch Cat");
+            console.log("current mass and velocity" + player.mass + ", " + catVelocities[currentCat]);
+            currentCat++;
+            if (currentCat == 3)
+                currentCat = 0;
+            keyboardControls.switchCat = false;
+            catEars[0].material = catMaterials[currentCat];
+            catEars[1].material = catMaterials[currentCat];
+            playerVisual.material = catMaterials[currentCat];
+            player.scale.set(1 / (currentCat + 1), 1 / (currentCat + 1), 1 / (currentCat + 1));
+            player.mass = catMasses[currentCat];
+            console.log("newmass and velocity" + player.mass + ", " + catVelocities[currentCat]);
+        }
     }
     //check controls
     function checkControls() {
         if (keyboardControls.enabled) {
             velocity = new Vector3();
+            switchCurrentCat();
             var time = performance.now();
             var delta = (time - prevTime) / 1000;
             if (isGrounded) {
                 var direction = new Vector3(0, 0, 0);
                 if (keyboardControls.moveForward) {
-                    velocity.z -= 800.0 * delta;
+                    velocity.z -= catVelocities[currentCat] * delta;
                 }
                 if (keyboardControls.moveLeft) {
-                    velocity.x -= 800.0 * delta;
+                    velocity.x -= catVelocities[currentCat] * delta;
                 }
                 if (keyboardControls.moveBackward) {
-                    velocity.z += 800.0 * delta;
+                    velocity.z += catVelocities[currentCat] * delta;
                 }
                 if (keyboardControls.moveRight) {
-                    velocity.x += 800.0 * delta;
+                    velocity.x += catVelocities[currentCat] * delta;
                 }
                 if (keyboardControls.jump) {
-                    velocity.y += 8000.0 * delta;
-                    if (player.position.y > 4) {
-                        isGrounded = false;
+                    if (currentCat == 0) {
+                    }
+                    else if (currentCat == 1) {
+                        velocity.y += catVelocities[currentCat] * 10 * delta;
+                        if (player.position.y > 4) {
+                            isGrounded = false;
+                        }
+                    }
+                    else if (currentCat == 2) {
+                        velocity.y += catVelocities[currentCat] * 10 * delta;
+                        velocity.z -= catVelocities[currentCat] * 2 * delta;
+                        if (player.position.y > 3) {
+                            isGrounded = false;
+                        }
                     }
                 }
                 player.setDamping(0.7, 0.1);

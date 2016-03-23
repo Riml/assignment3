@@ -197,7 +197,7 @@ declare module Physijs {
     }
 
     export class BoxMesh extends Mesh {
-        constructor(geometry:THREE.Geometry, material:THREE.Material, mass?:number);
+        constructor(geometry:THREE.Geometry, material:Physijs.Material, mass?:number);
     }
 
     export class SphereMesh extends Mesh {

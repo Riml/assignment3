@@ -7,10 +7,18 @@ var objects;
             this.enabled = false;
             document.addEventListener('keydown', this.onKeyDown.bind(this), false);
             document.addEventListener('keyup', this.onKeyUp.bind(this), false);
+            // document.addEventListener('keypressed',this.onKeyPress.bind(this), false);
         }
         // PUBLIC METHODS
+        KeyboardControls.prototype.onKeyPress = function (event) {
+            switch (event.keyCode) {
+            }
+        };
         KeyboardControls.prototype.onKeyDown = function (event) {
             switch (event.keyCode) {
+                case 81:
+                    this.switchCat = true;
+                    break;
                 case 38: /*up arrow*/
                 case 87:
                     this.moveForward = true;
@@ -34,6 +42,9 @@ var objects;
         };
         KeyboardControls.prototype.onKeyUp = function (event) {
             switch (event.keyCode) {
+                case 81:
+                    this.switchCat = false;
+                    break;
                 case 38: /*up arrow*/
                 case 87:
                     this.moveForward = false;

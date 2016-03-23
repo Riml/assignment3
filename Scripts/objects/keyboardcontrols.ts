@@ -6,6 +6,7 @@ module objects {
         public moveBackward: boolean;
         public moveLeft: boolean;
         public moveRight: boolean;
+        public switchCat: boolean;
         public jump: boolean;
         public enabled: boolean;
         // CONSTRUCTOR ++++++++++++++++++++++++++    
@@ -13,12 +14,22 @@ module objects {
             this.enabled = false;
             document.addEventListener('keydown', this.onKeyDown.bind(this), false);
             document.addEventListener('keyup', this.onKeyUp.bind(this), false);
+           // document.addEventListener('keypressed',this.onKeyPress.bind(this), false);
         }
 
         // PUBLIC METHODS
+        public onKeyPress(event: KeyboardEvent):void{
+            
+             switch (event.keyCode) {
+                 
+             }
+        }
         
         public onKeyDown(event: KeyboardEvent): void {
             switch (event.keyCode) {
+                case 81: /* Q key */
+                    this.switchCat = true;
+                    break;
                 case 38: /*up arrow*/
                 case 87: /* W Key */
                     this.moveForward = true;
@@ -43,6 +54,9 @@ module objects {
 
         public onKeyUp(event: KeyboardEvent): void {
             switch (event.keyCode) {
+                 case 81: /* Q key */
+                    this.switchCat = false;
+                    break;
                 case 38: /*up arrow*/
                 case 87: /* W Key */
                     this.moveForward = false;
