@@ -283,6 +283,7 @@ var game = (function () {
         createWall(2, 26, 8, 1, "wall-v-7");
         createWall(4, 32, 18, 1, "wall-v-8");
         createWall(46, 0, 24, 1, "wall-right-border");
+        createBreakableWall(1, 1, 0);
         //------------SETUP THE CAMER:create parent.child for camera-player-------------------------
         setupCamera();
         player.add(camera);
@@ -351,33 +352,28 @@ var game = (function () {
         scene.add(wall);
     }
     function createBreakableWall(startTileX, startTileZ, vertical) {
-        var bricksColumns = 5;
-        var brickRows = 8;
-        var bricksSize = TILE_SIZE / bricksColumns;
+        var bricksColumns = 8;
+        var brickRows = 1;
+        var bricksSizeX = TILE_SIZE / bricksColumns;
+        var bricksSizeZ = TILE_SIZE / brickRows;
+        var bricksSizeY = 0.25;
         var thisWallTexture = new THREE.TextureLoader().load("./Assets/Textures/wall.png");
-        thisWallTexture.wrapS = THREE.RepeatWrapping;
-        thisWallTexture.wrapT = THREE.RepeatWrapping;
-        thisWallTexture.repeat.set(1, 1);
         var thisWallTextureNormal = new THREE.TextureLoader().load("./Assets/Textures/wallNormal.png");
-        thisWallTextureNormal.wrapS = THREE.RepeatWrapping;
-        thisWallTextureNormal.wrapT = THREE.RepeatWrapping;
-        thisWallTextureNormal.repeat.set(1, 1);
         var thisWallMaterial = new THREE.MeshPhongMaterial;
         thisWallMaterial.map = thisWallTexture;
         thisWallMaterial.bumpMap = thisWallTextureNormal;
-        thisWallMaterial.bumpScale = 1.2;
-        var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0.1);
+        thisWallMaterial.bumpScale = 1.1;
+        var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0);
         for (var i = 0; i < brickRows; i++) {
             for (var j = 0; j < bricksColumns; j++) {
-                var thisWallGeometry = new BoxGeometry(bricksSize * vertical + 0.1, 0.25, bricksSize * (1 - vertical) + 0.1);
+                var thisWallGeometry = new BoxGeometry(bricksSizeX, bricksSizeY, bricksSizeX);
                 var wall = new Physijs.BoxMesh(thisWallGeometry, thisWallPhysicsMaterial, 1);
-                wall.position.set(startTileX * bricksSize + (bricksSize * 2 * vertical) / 2, 1, startTileZ * bricksSize + (bricksSize * 2 * (1 - vertical)) / 2);
+                wall.position.set(startTileX + (bricksSizeX * j * vertical), 0.5 + bricksSizeY * i, startTileZ + (bricksSizeY * j * (1 - vertical)));
+                wall.receiveShadow = true;
+                wall.name = "name";
+                scene.add(wall);
             }
         }
-        ;
-        wall.receiveShadow = true;
-        wall.name = "name";
-        scene.add(wall);
     }
     //PointerLockChange Event Handler
     function pointerLockChange(event) {
