@@ -242,9 +242,20 @@ var game = (() => {
         groundMaterial.bumpScale=1.2;
         
         
+        //double size tiles
         for(var x=0;x<23;x++)
         {
              for(var z=0;z<12;z++){
+                 
+                 //pits first-block
+                 if((x==9 && z==9) || (x==9 && z==10) || (x==9 && z==11)||
+                    (x==10 && z==10)|| (x==10 && z==11))
+                    {}
+                 
+                 //pits second-block
+                 else if((x==2 && z==4) || (x==2 && z==5) || (x==2 && z==6))
+                    {}
+                 else{                
                   groundGeometry = new BoxGeometry(TILE_SIZE*1.97, 1, TILE_SIZE*1.97);
                   groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
                   ground = new Physijs.ConvexMesh(groundGeometry, groundPhysicsMaterial, 0);
@@ -252,8 +263,17 @@ var game = (() => {
                   ground.position.set((x)*(TILE_SIZE*2),0,(z)*(TILE_SIZE*2)); // -1 for exatra tiles around the maze, for the walls
                   ground.name = "Ground";
                   scene.add(ground);
+                 }
              }
         }
+        
+         groundGeometry = new BoxGeometry(TILE_SIZE*24, 1, TILE_SIZE*46);
+         groundPhysicsMaterial = Physijs.createMaterial(new THREE.MeshBasicMaterial( {color: 0xffff00 , wireframe:true} ), 0.1, 0.1);
+         var deathGround = new Physijs.ConvexMesh(groundGeometry, groundPhysicsMaterial, 0);
+         deathGround.position.set((TILE_SIZE*24)/2,-TILE_SIZE,(TILE_SIZE*46)/2);
+         deathGround.name = "DeathGround";
+         scene.add(deathGround);
+         
         
         
        
@@ -405,7 +425,7 @@ var game = (() => {
         var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0.1);
         var wall = new Physijs.BoxMesh(thisWallGeometry, thisWallPhysicsMaterial, 0);
         
-        wall.position.set(startTileX*TILE_SIZE-TILE_SIZE + (wallLenght*vertical)/2,0.501,startTileZ*TILE_SIZE-TILE_SIZE+(wallLenght*(1-vertical))/2);
+        wall.position.set(startTileX*TILE_SIZE-TILE_SIZE + (wallLenght*vertical)/2,1,startTileZ*TILE_SIZE-TILE_SIZE+(wallLenght*(1-vertical))/2);
         
         wall.receiveShadow = true;
         wall.name = "name";

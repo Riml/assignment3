@@ -191,17 +191,30 @@ var game = (function () {
         groundMaterial.map = groundTexture;
         groundMaterial.bumpMap = groundTextureNormal;
         groundMaterial.bumpScale = 1.2;
+        //double size tiles
         for (var x = 0; x < 23; x++) {
             for (var z = 0; z < 12; z++) {
-                groundGeometry = new BoxGeometry(TILE_SIZE * 1.97, 1, TILE_SIZE * 1.97);
-                groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
-                ground = new Physijs.ConvexMesh(groundGeometry, groundPhysicsMaterial, 0);
-                ground.receiveShadow = true;
-                ground.position.set((x) * (TILE_SIZE * 2), 0, (z) * (TILE_SIZE * 2)); // -1 for exatra tiles around the maze, for the walls
-                ground.name = "Ground";
-                scene.add(ground);
+                //pits first-block
+                if ((x == 9 && z == 9) || (x == 9 && z == 10) || (x == 9 && z == 11) ||
+                    (x == 10 && z == 10) || (x == 10 && z == 11)) { }
+                else if ((x == 2 && z == 4) || (x == 2 && z == 5) || (x == 2 && z == 6)) { }
+                else {
+                    groundGeometry = new BoxGeometry(TILE_SIZE * 1.97, 1, TILE_SIZE * 1.97);
+                    groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
+                    ground = new Physijs.ConvexMesh(groundGeometry, groundPhysicsMaterial, 0);
+                    ground.receiveShadow = true;
+                    ground.position.set((x) * (TILE_SIZE * 2), 0, (z) * (TILE_SIZE * 2)); // -1 for exatra tiles around the maze, for the walls
+                    ground.name = "Ground";
+                    scene.add(ground);
+                }
             }
         }
+        groundGeometry = new BoxGeometry(TILE_SIZE * 24, 1, TILE_SIZE * 46);
+        groundPhysicsMaterial = Physijs.createMaterial(new THREE.MeshBasicMaterial({ color: 0xffff00, wireframe: true }), 0.1, 0.1);
+        var deathGround = new Physijs.ConvexMesh(groundGeometry, groundPhysicsMaterial, 0);
+        deathGround.position.set((TILE_SIZE * 24) / 2, -TILE_SIZE, (TILE_SIZE * 46) / 2);
+        deathGround.name = "DeathGround";
+        scene.add(deathGround);
         //ground.position.set(24* TILE_SIZE/2,0,46* TILE_SIZE/2);
         console.log("Added Burnt Ground to scene");
         // -------------------------------------------Player Object-----------------------------------------
@@ -314,7 +327,7 @@ var game = (function () {
         var thisWallGeometry = new BoxGeometry(wallLenght * vertical + 0.5, 10, wallLenght * (1 - vertical) + 0.5);
         var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0.1);
         var wall = new Physijs.BoxMesh(thisWallGeometry, thisWallPhysicsMaterial, 0);
-        wall.position.set(startTileX * TILE_SIZE - TILE_SIZE + (wallLenght * vertical) / 2, 0.501, startTileZ * TILE_SIZE - TILE_SIZE + (wallLenght * (1 - vertical)) / 2);
+        wall.position.set(startTileX * TILE_SIZE - TILE_SIZE + (wallLenght * vertical) / 2, 1, startTileZ * TILE_SIZE - TILE_SIZE + (wallLenght * (1 - vertical)) / 2);
         wall.receiveShadow = true;
         wall.name = "name";
         scene.add(wall);
