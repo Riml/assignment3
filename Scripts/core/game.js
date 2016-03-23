@@ -182,30 +182,27 @@ var game = (function () {
         var groundTexture = new THREE.TextureLoader().load("./Assets/Textures/floor.png");
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
-        groundTexture.repeat.set(20, 20);
+        groundTexture.repeat.set(1, 1);
         var groundTextureNormal = new THREE.TextureLoader().load("./Assets/Textures/floorNormal.png");
         groundTextureNormal.wrapS = THREE.RepeatWrapping;
         groundTextureNormal.wrapT = THREE.RepeatWrapping;
-        groundTextureNormal.repeat.set(20, 20);
+        groundTextureNormal.repeat.set(1, 1);
         var groundMaterial = new THREE.MeshPhongMaterial;
         groundMaterial.map = groundTexture;
         groundMaterial.bumpMap = groundTextureNormal;
         groundMaterial.bumpScale = 1.2;
-        /*
-        for(var x=0;x<24;x++)
-        {
-             for(var z=0;z<24;z++){
-                 
-             }
+        for (var x = 0; x < 23; x++) {
+            for (var z = 0; z < 12; z++) {
+                groundGeometry = new BoxGeometry(TILE_SIZE * 1.97, 1, TILE_SIZE * 1.97);
+                groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
+                ground = new Physijs.ConvexMesh(groundGeometry, groundPhysicsMaterial, 0);
+                ground.receiveShadow = true;
+                ground.position.set((x) * (TILE_SIZE * 2), 0, (z) * (TILE_SIZE * 2)); // -1 for exatra tiles around the maze, for the walls
+                ground.name = "Ground";
+                scene.add(ground);
+            }
         }
-        */
-        groundGeometry = new BoxGeometry(24 * TILE_SIZE * 4, 1, 46 * TILE_SIZE * 4);
-        groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0, 0);
-        ground = new Physijs.ConvexMesh(groundGeometry, groundPhysicsMaterial, 0);
-        ground.receiveShadow = true;
         //ground.position.set(24* TILE_SIZE/2,0,46* TILE_SIZE/2);
-        ground.name = "Ground";
-        scene.add(ground);
         console.log("Added Burnt Ground to scene");
         // -------------------------------------------Player Object-----------------------------------------
         playerTexture = new THREE.TextureLoader().load("./Assets/Textures/Cat.jpg");
@@ -229,7 +226,7 @@ var game = (function () {
         player.add(myPlayer);
         player.add(ear1);
         player.add(ear2);
-        player.position.set(0, 30, 20);
+        player.position.set(5, 30, TILE_SIZE * 10);
         scene.add(player);
         console.log("Added Player to Scene");
         //---------------------------Level Creation-----------------------------------------------
@@ -314,10 +311,10 @@ var game = (function () {
         thisWallMaterial.map = thisWallTexture;
         thisWallMaterial.bumpMap = thisWallTextureNormal;
         thisWallMaterial.bumpScale = 1.2;
-        var thisWallGeometry = new BoxGeometry(wallLenght * vertical + 0.5, 20, wallLenght * (1 - vertical) + 0.5);
+        var thisWallGeometry = new BoxGeometry(wallLenght * vertical + 0.5, 10, wallLenght * (1 - vertical) + 0.5);
         var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0.1);
         var wall = new Physijs.BoxMesh(thisWallGeometry, thisWallPhysicsMaterial, 0);
-        wall.position.set(startTileX * TILE_SIZE + (wallLenght * vertical) / 2 - 5, 0.501, startTileZ * TILE_SIZE + (wallLenght * (1 - vertical)) / 2 - 5);
+        wall.position.set(startTileX * TILE_SIZE - TILE_SIZE + (wallLenght * vertical) / 2, 0.501, startTileZ * TILE_SIZE - TILE_SIZE + (wallLenght * (1 - vertical)) / 2);
         wall.receiveShadow = true;
         wall.name = "name";
         scene.add(wall);
