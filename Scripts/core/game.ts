@@ -234,6 +234,10 @@ var game = (() => {
                  //pits second-block
                  else if((x==2 && z==4) || (x==2 && z==5) || (x==2 && z==6))
                     {}
+                 else if(x==6&&z==5||x==7&&z==5)
+                 {
+                     createUnstableTile(groundMaterial,x,z);
+                 }   
                  else{                
                   groundGeometry = new BoxGeometry(TILE_SIZE*1.999, 0.2, TILE_SIZE*1.999);
                   groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
@@ -334,9 +338,14 @@ var game = (() => {
         player.add(camera);
         //------------------------------------------------ Collision Check--------------------------
         player.addEventListener('collision', (coll) => {
-            if (coll.name === "Ground") {
+            if (coll.name === "Ground" ) {
                isGrounded = true;
                //createjs.Sound.play("land");
+            }
+            if (coll.name === "shakeLand" ) {
+                console.log("cat step on shaking land");
+               isGrounded = true;
+               coll.mass=0.01;
             }
            
             
@@ -363,6 +372,16 @@ var game = (() => {
         
     }
     //end of init
+    function createUnstableTile(groundMaterial: THREE.MeshPhongMaterial,x:number,z:number)
+    {
+          groundGeometry = new BoxGeometry(TILE_SIZE*1.999, 0.2, TILE_SIZE*1.999);
+          groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
+          ground = new Physijs.BoxMesh(groundGeometry, groundPhysicsMaterial, 0);
+          ground.receiveShadow = true;
+          ground.position.set((x)*(TILE_SIZE*2),0.4,(z)*(TILE_SIZE*2)); // -1 for exatra tiles around the maze, for the walls
+          ground.name = "shakeLand";
+          scene.add(ground);
+    }
     
     // if not vertical, then horizontal
     function createWall( wallLenght:number, startTileX:number, startTileZ:number,vertical:number, name:string ){

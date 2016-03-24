@@ -187,6 +187,9 @@ var game = (function () {
                 if ((x == 9 && z == 9) || (x == 9 && z == 10) || (x == 9 && z == 11) ||
                     (x == 10 && z == 10) || (x == 10 && z == 11)) { }
                 else if ((x == 2 && z == 4) || (x == 2 && z == 5) || (x == 2 && z == 6)) { }
+                else if (x == 6 && z == 5 || x == 7 && z == 5) {
+                    createUnstableTile(groundMaterial, x, z);
+                }
                 else {
                     groundGeometry = new BoxGeometry(TILE_SIZE * 1.999, 0.2, TILE_SIZE * 1.999);
                     groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
@@ -277,6 +280,11 @@ var game = (function () {
             if (coll.name === "Ground") {
                 isGrounded = true;
             }
+            if (coll.name === "shakeLand") {
+                console.log("cat step on shaking land");
+                isGrounded = true;
+                coll.mass = 0.001;
+            }
             if (coll.name === "DeathPlane") {
                 createjs.Sound.play("hit");
                 //livesValue--;
@@ -296,6 +304,15 @@ var game = (function () {
         window.addEventListener('resize', onWindowResize, false);
     }
     //end of init
+    function createUnstableTile(groundMaterial, x, z) {
+        groundGeometry = new BoxGeometry(TILE_SIZE * 1.999, 0.2, TILE_SIZE * 1.999);
+        groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
+        ground = new Physijs.BoxMesh(groundGeometry, groundPhysicsMaterial, 0);
+        ground.receiveShadow = true;
+        ground.position.set((x) * (TILE_SIZE * 2), 0.4, (z) * (TILE_SIZE * 2)); // -1 for exatra tiles around the maze, for the walls
+        ground.name = "shakeLand";
+        scene.add(ground);
+    }
     // if not vertical, then horizontal
     function createWall(wallLenght, startTileX, startTileZ, vertical, name) {
         wallLenght = TILE_SIZE * wallLenght;
