@@ -109,22 +109,23 @@ var game = (function () {
         var coinMaterial = Physijs.createMaterial(new THREE.MeshPhongMaterial);
         coin = new Physijs.ConvexMesh(coinGeometry, coinMaterial);
         var coinLoader = new THREE.JSONLoader().load("./Assets/coin.json", function (geometry) {
-            coinMaterial = Physijs.createMaterial(new THREE.MeshPhongMaterial({ color: 0xbaddab }), 0.2, 0.2);
+            coinMaterial = Physijs.createMaterial(new THREE.MeshPhongMaterial({ color: 0xbaddab }));
             coin = new Physijs.ConvexMesh(geometry, coinMaterial, 1);
+            coin.receiveShadow = true;
+            coin.castShadow = true;
+            coin.name = "coin";
+            SetCoinPosition();
         });
-        coin.receiveShadow = true;
-        coin.castShadow = true;
-        coin.name = "coin";
-        SetCoinPosition();
     }
     function SetCoinPosition() {
         var randomx = Math.floor(Math.random() * 20) - 10;
         var randomz = Math.floor(Math.random() * 20) - 10;
         coin.position.set(randomx, 10, randomz);
-        scene.add(coin);
+        //scene.add(coin);
     }
     function init() {
         setupCanvas();
+        scene.setGravity(new Vector3(0, 0, 0));
         // Create to HTMLElements
         blocker = document.getElementById("blocker");
         instructions = document.getElementById("instructions");
@@ -229,8 +230,8 @@ var game = (function () {
         catTextures = new Array(3);
         catMaterials = new Array(3);
         catEars = new Array(2);
-        catMasses = new Array(1000, 2, 1);
-        catVelocities = new Array(200000, 1000, 1500);
+        catMasses = new Array(5000, 2, 1);
+        catVelocities = new Array(1000000, 1000, 1500);
         catTextures[0] = new THREE.TextureLoader().load("./Assets/Textures/Fur1.png");
         catTextures[1] = new THREE.TextureLoader().load("./Assets/Textures/Fur2.png");
         catTextures[2] = new THREE.TextureLoader().load("./Assets/Textures/Fur3.png");
@@ -257,7 +258,7 @@ var game = (function () {
         player.add(playerVisual);
         player.add(catEars[0]);
         player.add(catEars[1]);
-        player.position.set(5, 30, TILE_SIZE * 10);
+        player.position.set(3, 5, TILE_SIZE * 11);
         scene.add(player);
         console.log("Added Player to Scene");
         //---------------------------Level Creation-----------------------------------------------
@@ -283,7 +284,7 @@ var game = (function () {
         createWall(2, 26, 8, 1, "wall-v-7");
         createWall(4, 32, 18, 1, "wall-v-8");
         createWall(46, 0, 24, 1, "wall-right-border");
-        createBreakableWall(1, 1, 0);
+        createBreakableWall(2.2, 9, 0);
         //------------SETUP THE CAMER:create parent.child for camera-player-------------------------
         setupCamera();
         player.add(camera);
@@ -319,6 +320,7 @@ var game = (function () {
         //scene.add(sphere);
         //console.log("Added Sphere to Scene");
         //---------------------------------- add controls-----------------------------------------------
+        scene.setGravity(new Vector3(0, -1, 0));
         // Add framerate stats
         addStatsObject();
         console.log("Added Stats to scene...");
@@ -343,17 +345,17 @@ var game = (function () {
         thisWallMaterial.map = thisWallTexture;
         thisWallMaterial.bumpMap = thisWallTextureNormal;
         thisWallMaterial.bumpScale = 1.2;
-        var thisWallGeometry = new BoxGeometry(wallLenght * vertical + 0.5, 10, wallLenght * (1 - vertical) + 0.5);
+        var thisWallGeometry = new BoxGeometry(wallLenght * vertical + 0.5, 5, wallLenght * (1 - vertical) + 0.5);
         var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0.1);
         var wall = new Physijs.BoxMesh(thisWallGeometry, thisWallPhysicsMaterial, 0);
-        wall.position.set(startTileX * TILE_SIZE - TILE_SIZE + (wallLenght * vertical) / 2, 1, startTileZ * TILE_SIZE - TILE_SIZE + (wallLenght * (1 - vertical)) / 2);
+        wall.position.set(startTileX * TILE_SIZE - TILE_SIZE + (wallLenght * vertical) / 2, 2.5, startTileZ * TILE_SIZE - TILE_SIZE + (wallLenght * (1 - vertical)) / 2);
         wall.receiveShadow = true;
         wall.name = "name";
         scene.add(wall);
     }
     function createBreakableWall(startTileX, startTileZ, vertical) {
         var bricksColumns = 8;
-        var brickRows = 1;
+        var brickRows = 6;
         var bricksSizeX = TILE_SIZE / bricksColumns;
         var bricksSizeZ = TILE_SIZE / brickRows;
         var bricksSizeY = 0.25;
@@ -366,9 +368,9 @@ var game = (function () {
         var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0);
         for (var i = 0; i < brickRows; i++) {
             for (var j = 0; j < bricksColumns; j++) {
-                var thisWallGeometry = new BoxGeometry(bricksSizeX, bricksSizeY, bricksSizeX);
-                var wall = new Physijs.BoxMesh(thisWallGeometry, thisWallPhysicsMaterial, 1);
-                wall.position.set(startTileX + (bricksSizeX * j * vertical), 0.5 + bricksSizeY * i, startTileZ + (bricksSizeY * j * (1 - vertical)));
+                var thisWallGeometry = new BoxGeometry(bricksSizeX, bricksSizeY, bricksSizeZ);
+                var wall = new Physijs.BoxMesh(thisWallGeometry, thisWallPhysicsMaterial, 40);
+                wall.position.set(startTileX * TILE_SIZE + bricksSizeX + (bricksSizeX * j * vertical), 0.5 + bricksSizeY / 2 + bricksSizeY * i, startTileZ * TILE_SIZE + bricksSizeZ + (bricksSizeZ * j * (1 - vertical)));
                 wall.receiveShadow = true;
                 wall.name = "name";
                 scene.add(wall);
