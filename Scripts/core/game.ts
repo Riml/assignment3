@@ -247,7 +247,7 @@ var game = (() => {
         }
         
          groundGeometry = new BoxGeometry(TILE_SIZE*30, 0.1, TILE_SIZE*50);
-         groundPhysicsMaterial = Physijs.createMaterial(new THREE.MeshBasicMaterial( {color: 0x000000} ), 0.1, 0.1);
+         groundPhysicsMaterial = Physijs.createMaterial(new THREE.MeshBasicMaterial( {color: 0x000000} ), 10000, 0.1);
          var deathGround = new Physijs.BoxMesh(groundGeometry, groundPhysicsMaterial, 0);
          deathGround.position.set((TILE_SIZE*30)/2,-TILE_SIZE*1.5,(TILE_SIZE*50)/2);
          deathGround.name = "DeathPlane";
@@ -267,15 +267,10 @@ var game = (() => {
         catEars = new Array(2);
         catMasses = new Array(4000,2,1);
         catVelocities = new Array(3000000,1000,1500);
-        
-        
         catTextures[0] = new THREE.TextureLoader().load( "./Assets/Textures/Fur1.png" );
         catTextures[1] =  new THREE.TextureLoader().load("./Assets/Textures/Fur2.png");
         catTextures[2] =  new THREE.TextureLoader().load("./Assets/Textures/Fur3.png");
         currentCat=0;
-        
-       
-        
         var myPlayerGeometry = new SphereGeometry(2.01, 20, 20);
         catMaterials[0] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[0]});
         catMaterials[1] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[1]});
@@ -283,18 +278,12 @@ var game = (() => {
         currentCatMaterial=catMaterials[0];
         playerVisual = new Mesh(myPlayerGeometry, currentCatMaterial);
         playerVisual.rotation.y = THREE.Math.degToRad(90);
-        
-        
         playerGeometry = new SphereGeometry(2, 20, 20);
         playerMaterial = Physijs.createMaterial(new LambertMaterial({ color: 0xFFffFF}), 0.4, 0);
-
-        player = new Physijs.BoxMesh(playerGeometry, playerMaterial, catMasses[currentCat]);
+        player = new Physijs.SphereMesh(playerGeometry, playerMaterial, catMasses[currentCat]);
         player.receiveShadow = true;
         player.castShadow = true;
-       
-               
         player.name = "Player";
-        
         var geometry = new THREE.CylinderGeometry( 0.01, 1, 3, 9 );
         var material = currentCatMaterial;
         catEars[0] = new THREE.Mesh( geometry, material );
@@ -311,7 +300,7 @@ var game = (() => {
         scene.add(player);
         console.log("Added Player to Scene");
         //---------------------------Level Creation-----------------------------------------------
-            //horizontal
+        //horizontal
         createWall(24,0,0,0,"wall-bottom-border");
         createWall(10,8,8,0,"wall-h-1");
         createWall(22,12,0,0,"wall-h-2");
@@ -322,9 +311,7 @@ var game = (() => {
         createWall(4,28,4,0,"wall-h-7"); 
         createWall(18,32,0,0,"wall-h-8"); 
         createWall(24,46,0,0,"wall-top-border"); 
-           //vertical
-         
-       
+        //vertical
         createWall(46,0,0,1,"wall-left-border");
         createWall(8,0,8,1,"wall-v-1");
         createWall(6,0,14,1,"wall-v-2");
@@ -334,12 +321,13 @@ var game = (() => {
         createWall(4,20,6,1,"wall-v-6");
         createWall(2,26,8,1,"wall-v-7");
         createWall(4,32,18,1,"wall-v-8");
-        
         createWall(46,0,24,1,"wall-right-border");
         
         createBreakableWall(8,21,0);
         createBreakableWall(13,8,1);
         createBreakableWall(11,8,1);
+        
+        creatCrate(16,8);
         
         //------------SETUP THE CAMER:create parent.child for camera-player-------------------------
         setupCamera();
@@ -409,6 +397,26 @@ var game = (() => {
     }
     function creatCrate(startTileX:number, startTileZ:number)
     {
+        //var thisCrateTexture: Texture = new THREE.TextureLoader().load("./Assets/Textures/wall.png");
+        var thisCrateMaterial: THREE.MeshBasicMaterial = new THREE.MeshBasicMaterial({color: 0xFACEee});
+       // thisCrateTexture.map = thisWallTexture;
+        //thisWallTexture.wrapS=THREE.RepeatWrapping;
+        //thisWallTexture.wrapT=THREE.RepeatWrapping;
+      //  thisWallTexture.repeat.set(0.1,0.1);
+      
+
+        var thisCratePhysicsMaterial = Physijs.createMaterial(thisCrateMaterial, 10, 0.1);
+        var thisCrateGeometry = new BoxGeometry(TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        
+        var crate = new Physijs.BoxMesh(thisCrateGeometry, thisCratePhysicsMaterial, 100);
+        crate.position.set(
+                     startTileX*TILE_SIZE+TILE_SIZE/2,
+                     0.5+TILE_SIZE/2,
+                     startTileZ*TILE_SIZE +TILE_SIZE/2
+                );
+       crate.receiveShadow = true;
+       crate.name = "Ground";
+       scene.add(crate);
         
     }
     function createBreakableWall(startTileX: number, startTileZ: number, vertical: number): void {
@@ -424,7 +432,7 @@ var game = (() => {
         thisWallMaterial.map = thisWallTexture;
         thisWallTexture.wrapS=THREE.RepeatWrapping;
         thisWallTexture.wrapT=THREE.RepeatWrapping;
-        thisWallTexture.repeat.set(0.1,0.1);
+        thisWallTexture.repeat.set(0.2,0.2);
       
 
         var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0);
@@ -506,15 +514,12 @@ var game = (() => {
         // render the scene
         renderer.render(scene, camera);
         
-        //console.log("Camera"
-        // +"with x" + camera.rotation.x+" y:" + camera.rotation.y+" z:" + camera.rotation.z);
+      
     }
     function switchCurrentCat():void {
         
          if(keyboardControls.switchCat)
             {
-                console.log("Switch Cat");
-                console.log("current mass and velocity"+player.mass + ", "+ catVelocities[currentCat]);
                 currentCat++;
                 if(currentCat==3)
                     currentCat=0;
@@ -523,13 +528,10 @@ var game = (() => {
                 catEars[0].material = catMaterials[currentCat];
                 catEars[1].material = catMaterials[currentCat];
                 playerVisual.material= catMaterials[currentCat];
-                player.scale.set(1/(currentCat+1),1/(currentCat+1),1/(currentCat+1));
+                player.scale.set(1/(currentCat+1),1/(currentCat+1),1/(currentCat+1)); //!!! Quite unpredictable things happenning here
                 player.mass = catMasses[currentCat];
-                console.log("newmass and velocity"+player.mass + ", "+ catVelocities[currentCat]);
-                
             }
-        
-    }
+   }
     
     //check controls
     function checkControls():void
@@ -567,8 +569,8 @@ var game = (() => {
                         }
                     }
                     else if(currentCat == 2){
-                    velocity.y += catVelocities[currentCat]*6 * delta;
-                    velocity.z -= catVelocities[currentCat]* 10 * delta;
+                    velocity.y += catVelocities[currentCat]*5 * delta;
+                    velocity.z -= catVelocities[currentCat]* 8 * delta;
                         if (player.position.y > 3) {
                             isGrounded = false;
                         }
@@ -580,7 +582,7 @@ var game = (() => {
                 // Changing player's rotation
                 var tempRot = THREE.Math.clamp(-mouseControls.yaw,-4,4);//values become crazy(up to 30), have to clamp
                 player.setAngularVelocity(new Vector3(0, tempRot, 0));
-                //console.log("yaw"+(-mouseControls.yaw));
+              
                 direction.addVectors(direction, velocity);
                 direction.applyQuaternion(player.quaternion);
                 if (Math.abs(player.getLinearVelocity().x) < 20 && Math.abs(player.getLinearVelocity().y) < 10) {
@@ -625,7 +627,7 @@ var game = (() => {
 
     // Setup main camera for the scene
     function setupCamera(): void {
-        camera = new PerspectiveCamera(35, config.Screen.RATIO, 0.1, 1000);
+        camera = new PerspectiveCamera(35, config.Screen.RATIO, 0.1, 300);
         camera.position.set(0, 8, 20);
         //camera.rotation.set(0,0,0);
         //camera.lookAt(player.position);
