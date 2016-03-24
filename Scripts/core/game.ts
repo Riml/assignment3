@@ -96,8 +96,7 @@ var game = (() => {
     var canvas: HTMLElement;
     var stage: createjs.Stage;
     
-    var coin: Physijs.ConvexMesh;
-    
+       
     var scoreLabel: createjs.Text;
     var scoreValue: number;
     
@@ -131,31 +130,7 @@ var game = (() => {
         stage =  new createjs.Stage(canvas);
     } 
 
-    function addCoinMesh():void {
-        var coinGeometry = new Geometry();
-        var coinMaterial = Physijs.createMaterial(new THREE.MeshPhongMaterial);
-        coin = new Physijs.ConvexMesh(coinGeometry,coinMaterial);
-        
-        var coinLoader = new THREE.JSONLoader().load("./Assets/coin.json",
-        function(geometry:THREE.Geometry){
-            coinMaterial = Physijs.createMaterial( new THREE.MeshPhongMaterial({color:0xbaddab}));
-            coin = new Physijs.ConvexMesh(geometry,coinMaterial,1);
-            coin.receiveShadow=true;
-            coin.castShadow=true;
-            coin.name="coin";
-            SetCoinPosition();
-        });
-        
-        
-    }
-    
-    function SetCoinPosition():void {
-        var randomx= Math.floor(Math.random()*20)-10;
-        var randomz= Math.floor(Math.random()*20)-10;
-        coin.position.set(randomx,10,randomz);
-        //scene.add(coin);
-        
-    }
+ 
 
     function init() {
         setupCanvas();
@@ -205,7 +180,7 @@ var game = (() => {
         //-------------------------- Scene changes for Physijs-------------------------------------------------------
         scene.name = "Main";
         scene.fog = new THREE.Fog(0xffffff, 0, 750);
-        scene.setGravity(new THREE.Vector3(0, -10, 0));
+        //scene.setGravity(new THREE.Vector3(0, -10, 0));
 
         scene.addEventListener('update', () => {
             scene.simulate(undefined, 2);
@@ -272,22 +247,22 @@ var game = (() => {
                  else if((x==2 && z==4) || (x==2 && z==5) || (x==2 && z==6))
                     {}
                  else{                
-                  groundGeometry = new BoxGeometry(TILE_SIZE*1.97, 1, TILE_SIZE*1.97);
+                  groundGeometry = new BoxGeometry(TILE_SIZE*1.999, 0.2, TILE_SIZE*1.999);
                   groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
-                  ground = new Physijs.ConvexMesh(groundGeometry, groundPhysicsMaterial, 0);
+                  ground = new Physijs.BoxMesh(groundGeometry, groundPhysicsMaterial, 0);
                   ground.receiveShadow = true;
-                  ground.position.set((x)*(TILE_SIZE*2),0,(z)*(TILE_SIZE*2)); // -1 for exatra tiles around the maze, for the walls
+                  ground.position.set((x)*(TILE_SIZE*2),0.4,(z)*(TILE_SIZE*2)); // -1 for exatra tiles around the maze, for the walls
                   ground.name = "Ground";
                   scene.add(ground);
                  }
              }
         }
         
-         groundGeometry = new BoxGeometry(TILE_SIZE*24, 1, TILE_SIZE*46);
-         groundPhysicsMaterial = Physijs.createMaterial(new THREE.MeshBasicMaterial( {color: 0xffff00 , wireframe:true} ), 0.1, 0.1);
-         var deathGround = new Physijs.ConvexMesh(groundGeometry, groundPhysicsMaterial, 0);
-         deathGround.position.set((TILE_SIZE*24)/2,-TILE_SIZE,(TILE_SIZE*46)/2);
-         deathGround.name = "DeathGround";
+         groundGeometry = new BoxGeometry(TILE_SIZE*30, 0.1, TILE_SIZE*50);
+         groundPhysicsMaterial = Physijs.createMaterial(new THREE.MeshBasicMaterial( {color: 0x000000} ), 0.1, 0.1);
+         var deathGround = new Physijs.BoxMesh(groundGeometry, groundPhysicsMaterial, 0);
+         deathGround.position.set((TILE_SIZE*30)/2,-TILE_SIZE*1.5,(TILE_SIZE*50)/2);
+         deathGround.name = "DeathPlane";
          scene.add(deathGround);
          
         
@@ -302,8 +277,8 @@ var game = (() => {
         catTextures = new Array(3);
         catMaterials = new Array(3);
         catEars = new Array(2);
-        catMasses = new Array(5000,2,1);
-        catVelocities = new Array(1000000,1000,1500);
+        catMasses = new Array(4000,2,1);
+        catVelocities = new Array(3000000,1000,1500);
         
         
         catTextures[0] = new THREE.TextureLoader().load( "./Assets/Textures/Fur1.png" );
@@ -343,7 +318,7 @@ var game = (() => {
         player.add(catEars[0]);
         player.add(catEars[1]);
         player.position.set(3, 5,TILE_SIZE*11);
-        
+        player.setAngularFactor(new Vector3(0,0,0));
         
         scene.add(player);
         console.log("Added Player to Scene");
@@ -374,20 +349,28 @@ var game = (() => {
         
         createWall(46,0,24,1,"wall-right-border");
         
-        createBreakableWall(2.2,9,0);
+        createBreakableWall(8,21,0);
+        createBreakableWall(13,8,1);
+        createBreakableWall(11,8,1);
         
         //------------SETUP THE CAMER:create parent.child for camera-player-------------------------
         setupCamera();
         player.add(camera);
         //------------------------------------------------ Collision Check--------------------------
-        player.addEventListener('collision', (event) => {
-            if (event.name === "Ground") {
-                console.log("player hit the ground");
-                isGrounded = true;
-                createjs.Sound.play("land");
+        player.addEventListener('collision', (coll) => {
+            if (coll.name === "Ground") {
+               isGrounded = true;
+               //createjs.Sound.play("land");
             }
-            if (event.name === "Sphere") {
-                console.log("player hit the sphere");
+           
+            
+            if(coll.name === "DeathPlane") {
+                createjs.Sound.play("hit");
+                //livesValue--;
+                //livesLabel.text = "LIVES: " + livesValue;
+                scene.remove(player);
+                player.position.set(3, 5,TILE_SIZE*11);
+                scene.add(player);
             }
         });
 
@@ -400,7 +383,7 @@ var game = (() => {
         player.add(directionLine);
         console.log("Added DirectionLine to the Player");
         //random
-         addCoinMesh();   
+       
         
         
         // Sphere Object
@@ -418,7 +401,7 @@ var game = (() => {
        
 
 
-        scene.setGravity(new Vector3(0,-1,0));
+        scene.setGravity(new Vector3(0,-10,0));
         // Add framerate stats
         addStatsObject();
         console.log("Added Stats to scene...");
@@ -438,24 +421,24 @@ var game = (() => {
         var thisWallTexture:Texture = new THREE.TextureLoader().load( "./Assets/Textures/wall.png" );
         thisWallTexture.wrapS=THREE.RepeatWrapping;
         thisWallTexture.wrapT=THREE.RepeatWrapping;
-        thisWallTexture.repeat.set(wallLenght/10,1);
+        thisWallTexture.repeat.set(wallLenght/20,1);
         
                
         var thisWallTextureNormal: Texture = new THREE.TextureLoader().load( "./Assets/Textures/wallNormal.png" );
         thisWallTextureNormal.wrapS=THREE.RepeatWrapping;
         thisWallTextureNormal.wrapT=THREE.RepeatWrapping;
-        thisWallTextureNormal.repeat.set(wallLenght/10,1);
+        thisWallTextureNormal.repeat.set(wallLenght/20,1);
         
         var thisWallMaterial: THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial;
         thisWallMaterial.map=thisWallTexture;
         thisWallMaterial.bumpMap = thisWallTextureNormal;
         thisWallMaterial.bumpScale=1.2;
         
-        var thisWallGeometry = new BoxGeometry(wallLenght*vertical+0.5, 5, wallLenght*(1-vertical)+0.5);
+        var thisWallGeometry = new BoxGeometry(wallLenght*vertical+0.5, 6, wallLenght*(1-vertical)+0.5);
         var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0.1);
         var wall = new Physijs.BoxMesh(thisWallGeometry, thisWallPhysicsMaterial, 0);
         
-        wall.position.set(startTileX*TILE_SIZE-TILE_SIZE + (wallLenght*vertical)/2,2.5,startTileZ*TILE_SIZE-TILE_SIZE+(wallLenght*(1-vertical))/2);
+        wall.position.set(startTileX*TILE_SIZE-TILE_SIZE + (wallLenght*vertical)/2,3,startTileZ*TILE_SIZE-TILE_SIZE+(wallLenght*(1-vertical))/2);
         
         wall.receiveShadow = true;
         wall.name = "name";
@@ -463,22 +446,25 @@ var game = (() => {
         scene.add(wall);
         
     }
-    
+    function creatCrate(startTileX:number, startTileZ:number)
+    {
+        
+    }
     function createBreakableWall(startTileX: number, startTileZ: number, vertical: number): void {
 
-        var bricksColumns: number = 8;
+        var bricksColumns: number = 9;
         var brickRows: number = 6;
-        var bricksSizeX: number = TILE_SIZE / bricksColumns;
-        var bricksSizeZ: number = TILE_SIZE / brickRows;
-        var bricksSizeY: number = 0.25;
+        var bricksSizeX: number = 0.99;
+        var bricksSizeZ: number = 0.99;
+        var bricksSizeY: number = 0.9;
 
         var thisWallTexture: Texture = new THREE.TextureLoader().load("./Assets/Textures/wall.png");
-        var thisWallTextureNormal: Texture = new THREE.TextureLoader().load("./Assets/Textures/wallNormal.png");
-        
         var thisWallMaterial: THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial;
         thisWallMaterial.map = thisWallTexture;
-        thisWallMaterial.bumpMap = thisWallTextureNormal;
-        thisWallMaterial.bumpScale = 1.1;
+        thisWallTexture.wrapS=THREE.RepeatWrapping;
+        thisWallTexture.wrapT=THREE.RepeatWrapping;
+        thisWallTexture.repeat.set(0.1,0.1);
+      
 
         var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0);
         for (var i = 0; i < brickRows; i++) {
@@ -487,7 +473,7 @@ var game = (() => {
                 var wall = new Physijs.BoxMesh(thisWallGeometry, thisWallPhysicsMaterial, 40);
                 wall.position.set(
                      startTileX*TILE_SIZE+bricksSizeX + (bricksSizeX * j * vertical),
-                     0.5+bricksSizeY/2+bricksSizeY*i,
+                     0.5+bricksSizeY/2+(bricksSizeY)*i,
                      startTileZ*TILE_SIZE +bricksSizeZ + (bricksSizeZ * j * (1 - vertical)) 
                 );
                 wall.receiveShadow = true;
@@ -620,8 +606,8 @@ var game = (() => {
                         }
                     }
                     else if(currentCat == 2){
-                    velocity.y += catVelocities[currentCat]*10 * delta;
-                    velocity.z -= catVelocities[currentCat]* 2 * delta;
+                    velocity.y += catVelocities[currentCat]*6 * delta;
+                    velocity.z -= catVelocities[currentCat]* 10 * delta;
                         if (player.position.y > 3) {
                             isGrounded = false;
                         }
@@ -631,7 +617,9 @@ var game = (() => {
 
                 player.setDamping(0.7, 0.1);
                 // Changing player's rotation
-                player.setAngularVelocity(new Vector3(0, -mouseControls.yaw, 0));
+                var tempRot = THREE.Math.clamp(-mouseControls.yaw,-4,4);//values become crazy(up to 30), have to clamp
+                player.setAngularVelocity(new Vector3(0, tempRot, 0));
+                //console.log("yaw"+(-mouseControls.yaw));
                 direction.addVectors(direction, velocity);
                 direction.applyQuaternion(player.quaternion);
                 if (Math.abs(player.getLinearVelocity().x) < 20 && Math.abs(player.getLinearVelocity().y) < 10) {
@@ -676,8 +664,8 @@ var game = (() => {
 
     // Setup main camera for the scene
     function setupCamera(): void {
-        camera = new PerspectiveCamera(35, config.Screen.RATIO, 0.1, 100);
-        camera.position.set(0, 9, 20);
+        camera = new PerspectiveCamera(35, config.Screen.RATIO, 0.1, 1000);
+        camera.position.set(0, 8, 20);
         //camera.rotation.set(0,0,0);
         //camera.lookAt(player.position);
         console.log("Finished setting up Camera..."
