@@ -35,7 +35,8 @@ Physijs.scripts.worker = "/Scripts/lib/Physijs/physijs_worker.js";
 Physijs.scripts.ammo = "/Scripts/lib/Physijs/examples/js/ammo.js";
 // setup an IIFE structure (Immediately Invoked Function Expression)
 var game = (function () {
-    // declare game objects
+    //------------------------ declare game objects-------------------------------
+    //basic
     var havePointerLock;
     var element;
     var scene = new Scene(); // Instantiate Scene Object
@@ -47,20 +48,17 @@ var game = (function () {
     var instructions;
     var spotLight;
     var groundGeometry;
+    var ambientLight;
+    //physijs
     var groundPhysicsMaterial;
     var ground;
     var clock;
-    var sphereGeometry;
-    var sphereMaterial;
-    var sphere;
+    //controls
     var keyboardControls;
     var mouseControls;
     var isGrounded;
     var velocity = new Vector3(0, 0, 0);
     var prevTime = 0;
-    var directionLineMaterial;
-    var directionLineGeometry;
-    var directionLine;
     //Player realted variables
     var playerVisual;
     var catEars;
@@ -73,12 +71,14 @@ var game = (function () {
     var playerGeometry;
     var playerMaterial;
     var player;
-    var ambientLight;
+    //EaselJS and friends  
     var assests;
     var canvas;
     var stage;
     var scoreLabel;
     var scoreValue;
+    var livesLabel;
+    var livesValue;
     var TILE_SIZE; //to scale map(walls, hazards,ground and maybe skybox), should be constant
     var manifest = [
         { id: "land", src: "../../Assets/sound/Land.wav" }
@@ -285,26 +285,6 @@ var game = (function () {
                 scene.add(player);
             }
         });
-        // -----------------------------------Add DirectionLine------------------------------------
-        directionLineMaterial = new LineBasicMaterial({ color: 0xffff00 });
-        directionLineGeometry = new Geometry();
-        directionLineGeometry.vertices.push(new Vector3(0, 0, 0)); // line origin
-        directionLineGeometry.vertices.push(new Vector3(0, 0, -50)); // end of the line
-        directionLine = new Line(directionLineGeometry, directionLineMaterial);
-        player.add(directionLine);
-        console.log("Added DirectionLine to the Player");
-        //random
-        // Sphere Object
-        sphereGeometry = new SphereGeometry(2, 32, 32);
-        sphereMaterial = Physijs.createMaterial(new LambertMaterial({ color: 0x00ff00 }), 0.4, 0);
-        sphere = new Physijs.SphereMesh(sphereGeometry, sphereMaterial, 1);
-        sphere.position.set(0, 60, 5);
-        sphere.receiveShadow = true;
-        sphere.castShadow = true;
-        sphere.name = "Sphere";
-        //scene.add(sphere);
-        //console.log("Added Sphere to Scene");
-        //---------------------------------- add controls-----------------------------------------------
         scene.setGravity(new Vector3(0, -10, 0));
         // Add framerate stats
         addStatsObject();

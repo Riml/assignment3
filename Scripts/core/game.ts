@@ -43,36 +43,31 @@ Physijs.scripts.ammo = "/Scripts/lib/Physijs/examples/js/ammo.js";
 // setup an IIFE structure (Immediately Invoked Function Expression)
 var game = (() => {
 
-    // declare game objects
+    //------------------------ declare game objects-------------------------------
+    //basic
     var havePointerLock: boolean;
     var element: any;
     var scene: Scene = new Scene(); // Instantiate Scene Object
     var renderer: Renderer;
     var camera: PerspectiveCamera;
     var control: Control;
-    
     var stats: Stats;
     var blocker: HTMLElement;
     var instructions: HTMLElement;
     var spotLight: SpotLight;
     var groundGeometry: CubeGeometry;
+    var ambientLight: AmbientLight;
+    //physijs
     var groundPhysicsMaterial: Physijs.Material;
     var ground: Physijs.Mesh;
     var clock: Clock;
-    
-   
-    var sphereGeometry: SphereGeometry;
-    var sphereMaterial: Physijs.Material;
-    var sphere: Physijs.Mesh;
+    //controls
     var keyboardControls: objects.KeyboardControls;
     var mouseControls: objects.MouseControls;
     var isGrounded: boolean;
     var velocity: Vector3 = new Vector3(0, 0, 0);
     var prevTime: number = 0;
-    var directionLineMaterial: LineBasicMaterial;
-    var directionLineGeometry: Geometry;
-    var directionLine: Line;
-    //Player realted variables
+     //Player realted variables
     var playerVisual:Mesh;
     var catEars: Array<Mesh>;
     var catTextures: Array<Texture>;
@@ -80,25 +75,18 @@ var game = (() => {
     var currentCat: number;//0-fat,1-fast, 2-royal
     var catMasses: Array<number>;
     var catVelocities: Array<number>;
-    
     var currentCatMaterial: THREE.Material;
-    
     var playerGeometry: SphereGeometry;
     var playerMaterial: Physijs.Material;
     var player: Physijs.BoxMesh;
-    
-    
-    
-    
-    var ambientLight: AmbientLight;
+    //EaselJS and friends  
     var assests: createjs.LoadQueue;
-   
     var canvas: HTMLElement;
     var stage: createjs.Stage;
-    
-       
     var scoreLabel: createjs.Text;
     var scoreValue: number;
+    var livesLabel: createjs.Text;
+    var livesValue: number;
     
     var TILE_SIZE:number;//to scale map(walls, hazards,ground and maybe skybox), should be constant
     
@@ -373,33 +361,6 @@ var game = (() => {
                 scene.add(player);
             }
         });
-
-        // -----------------------------------Add DirectionLine------------------------------------
-        directionLineMaterial = new LineBasicMaterial({ color: 0xffff00 });
-        directionLineGeometry = new Geometry();
-        directionLineGeometry.vertices.push(new Vector3(0, 0, 0)); // line origin
-        directionLineGeometry.vertices.push(new Vector3(0, 0, -50)); // end of the line
-        directionLine = new Line(directionLineGeometry, directionLineMaterial);
-        player.add(directionLine);
-        console.log("Added DirectionLine to the Player");
-        //random
-       
-        
-        
-        // Sphere Object
-        sphereGeometry = new SphereGeometry(2, 32, 32);
-        sphereMaterial = Physijs.createMaterial(new LambertMaterial({ color: 0x00ff00 }), 0.4, 0);
-        sphere = new Physijs.SphereMesh(sphereGeometry, sphereMaterial, 1);
-        sphere.position.set(0, 60, 5);
-        sphere.receiveShadow = true;
-        sphere.castShadow = true;
-        sphere.name = "Sphere";
-        //scene.add(sphere);
-        //console.log("Added Sphere to Scene");
-
-        //---------------------------------- add controls-----------------------------------------------
-       
-
 
         scene.setGravity(new Vector3(0,-10,0));
         // Add framerate stats
