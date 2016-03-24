@@ -183,23 +183,19 @@ var game = (() => {
 
         // --------------------------------------------Add Lights---------------------------------------------------------
         spotLight = new SpotLight(0xffffff);
-        spotLight.position.set(20, 80, -15);
+        spotLight.position.set(5*TILE_SIZE, 500, 5*TILE_SIZE);
         spotLight.castShadow = true;
-        spotLight.intensity = 2;
-        spotLight.lookAt(new Vector3(0, 0, 0));
-        spotLight.shadowCameraNear = 2;
-        spotLight.shadowCameraFar = 200;
-        spotLight.shadowCameraLeft = -5;
-        spotLight.shadowCameraRight = 5;
-        spotLight.shadowCameraTop = 5;
-        spotLight.shadowCameraBottom = -5;
+        spotLight.intensity = 1.1;
+        spotLight.lookAt(new Vector3(10*TILE_SIZE, 10, 10*TILE_SIZE));
+        spotLight.shadowCameraNear = 0.1;
+        spotLight.shadowCameraFar = 1200;
         spotLight.shadowMapWidth = 2048;
         spotLight.shadowMapHeight = 2048;
         spotLight.shadowDarkness = 0.5;
         spotLight.name = "Spot Light";
         scene.add(spotLight);
                    
-        ambientLight = new AmbientLight(0x777777);
+        ambientLight = new AmbientLight(0x232323);
         scene.add(ambientLight);
         
         
@@ -215,10 +211,10 @@ var game = (() => {
         groundTextureNormal.wrapT=THREE.RepeatWrapping;
         groundTextureNormal.repeat.set(1,1);
         
-         var groundMaterial: THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial;
+         var groundMaterial: THREE.MeshLambertMaterial = new THREE.MeshLambertMaterial;
         groundMaterial.map=groundTexture;
-        groundMaterial.bumpMap = groundTextureNormal;
-        groundMaterial.bumpScale=1.2;
+        //groundMaterial.bumpMap = groundTextureNormal;
+       // groundMaterial.bumpScale=1.2;
         
         
         //double size tiles
@@ -243,6 +239,7 @@ var game = (() => {
                   groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
                   ground = new Physijs.BoxMesh(groundGeometry, groundPhysicsMaterial, 0);
                   ground.receiveShadow = true;
+                 
                   ground.position.set((x)*(TILE_SIZE*2),0.4,(z)*(TILE_SIZE*2)); // -1 for exatra tiles around the maze, for the walls
                   ground.name = "Ground";
                   scene.add(ground);
@@ -275,18 +272,19 @@ var game = (() => {
         catTextures[1] =  new THREE.TextureLoader().load("./Assets/Textures/Fur2.png");
         catTextures[2] =  new THREE.TextureLoader().load("./Assets/Textures/Fur3.png");
         currentCat=0;
-        var myPlayerGeometry = new SphereGeometry(2.01, 20, 20);
+        var myPlayerGeometry = new SphereGeometry(2.1, 20, 20);
         catMaterials[0] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[0]});
         catMaterials[1] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[1]});
         catMaterials[2] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[2]});
         currentCatMaterial=catMaterials[0];
         playerVisual = new Mesh(myPlayerGeometry, currentCatMaterial);
-        playerVisual.rotation.y = THREE.Math.degToRad(90);
+        playerVisual.receiveShadow=true;
+        playerVisual.castShadow=true;
+        playerVisual.rotation.y = THREE.Math.degToRad(0);
         playerGeometry = new SphereGeometry(2, 20, 20);
         playerMaterial = Physijs.createMaterial(new LambertMaterial({ color: 0xFFffFF}), 0.4, 0);
         player = new Physijs.SphereMesh(playerGeometry, playerMaterial, catMasses[currentCat]);
-        player.receiveShadow = true;
-        player.castShadow = true;
+       
         player.name = "Player";
         var geometry = new THREE.CylinderGeometry( 0.01, 1, 3, 9 );
         var material = currentCatMaterial;
@@ -298,6 +296,10 @@ var game = (() => {
         player.add(playerVisual);
         player.add(catEars[0]);
         player.add(catEars[1]);
+        catEars[0].receiveShadow=true;
+        catEars[0].castShadow=true;
+        catEars[1].receiveShadow=true;
+        catEars[1].castShadow=true;
         player.position.set(3, 5,TILE_SIZE*11);
         player.setAngularFactor(new Vector3(0,0,0));
         
@@ -354,6 +356,8 @@ var game = (() => {
                 //livesValue--;
                 //livesLabel.text = "LIVES: " + livesValue;
                 scene.remove(player);
+                player.rotation.set(0,0,0);
+                player.setAngularFactor(new Vector3(0,0,0));
                 player.position.set(3, 5,TILE_SIZE*11);
                 scene.add(player);
             }
@@ -372,12 +376,12 @@ var game = (() => {
         
     }
     //end of init
-    function createUnstableTile(groundMaterial: THREE.MeshPhongMaterial,x:number,z:number)
+    function createUnstableTile(groundMaterial: THREE.MeshLambertMaterial,x:number,z:number)
     {
           groundGeometry = new BoxGeometry(TILE_SIZE*1.999, 0.2, TILE_SIZE*1.999);
           groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
           ground = new Physijs.BoxMesh(groundGeometry, groundPhysicsMaterial, 0);
-          ground.receiveShadow = true;
+         
           ground.position.set((x)*(TILE_SIZE*2),0.4,(z)*(TILE_SIZE*2)); // -1 for exatra tiles around the maze, for the walls
           ground.name = "shakeLand";
           scene.add(ground);
@@ -389,18 +393,18 @@ var game = (() => {
         var thisWallTexture:Texture = new THREE.TextureLoader().load( "./Assets/Textures/wall.png" );
         thisWallTexture.wrapS=THREE.RepeatWrapping;
         thisWallTexture.wrapT=THREE.RepeatWrapping;
-        thisWallTexture.repeat.set(wallLenght/20,1);
+        thisWallTexture.repeat.set(wallLenght/10,1.1);
         
                
-        var thisWallTextureNormal: Texture = new THREE.TextureLoader().load( "./Assets/Textures/wallNormal.png" );
-        thisWallTextureNormal.wrapS=THREE.RepeatWrapping;
-        thisWallTextureNormal.wrapT=THREE.RepeatWrapping;
-        thisWallTextureNormal.repeat.set(wallLenght/20,1);
+        //var thisWallTextureNormal: Texture = new THREE.TextureLoader().load( "./Assets/Textures/wallNormal.png" );
+        //thisWallTextureNormal.wrapS=THREE.RepeatWrapping;
+        //thisWallTextureNormal.wrapT=THREE.RepeatWrapping;
+       // thisWallTextureNormal.repeat.set(wallLenght/30,1);
         
-        var thisWallMaterial: THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial;
+        var thisWallMaterial: THREE.MeshLambertMaterial = new THREE.MeshLambertMaterial;
         thisWallMaterial.map=thisWallTexture;
-        thisWallMaterial.bumpMap = thisWallTextureNormal;
-        thisWallMaterial.bumpScale=1.2;
+        //thisWallMaterial.bumpMap = thisWallTextureNormal;
+        //thisWallMaterial.bumpScale=1.2;
         
         var thisWallGeometry = new BoxGeometry(wallLenght*vertical+0.5, 6, wallLenght*(1-vertical)+0.5);
         var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0.1);
@@ -409,6 +413,7 @@ var game = (() => {
         wall.position.set(startTileX*TILE_SIZE-TILE_SIZE + (wallLenght*vertical)/2,3,startTileZ*TILE_SIZE-TILE_SIZE+(wallLenght*(1-vertical))/2);
         
         wall.receiveShadow = true;
+        wall.castShadow = true;
         wall.name = "name";
         
         scene.add(wall);
@@ -417,7 +422,7 @@ var game = (() => {
     function creatCrate(startTileX:number, startTileZ:number)
     {
         //var thisCrateTexture: Texture = new THREE.TextureLoader().load("./Assets/Textures/wall.png");
-        var thisCrateMaterial: THREE.MeshBasicMaterial = new THREE.MeshBasicMaterial({color: 0xFACEee});
+        var thisCrateMaterial: THREE.MeshLambertMaterial = new THREE.MeshLambertMaterial({color: 0xFACEee});
        // thisCrateTexture.map = thisWallTexture;
         //thisWallTexture.wrapS=THREE.RepeatWrapping;
         //thisWallTexture.wrapT=THREE.RepeatWrapping;
@@ -434,6 +439,7 @@ var game = (() => {
                      startTileZ*TILE_SIZE +TILE_SIZE/2
                 );
        crate.receiveShadow = true;
+       crate.castShadow = true;
        crate.name = "Ground";
        scene.add(crate);
         
@@ -447,11 +453,11 @@ var game = (() => {
         var bricksSizeY: number = 0.9;
 
         var thisWallTexture: Texture = new THREE.TextureLoader().load("./Assets/Textures/wall.png");
-        var thisWallMaterial: THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial;
+        var thisWallMaterial: THREE.MeshLambertMaterial = new THREE.MeshLambertMaterial;
         thisWallMaterial.map = thisWallTexture;
         thisWallTexture.wrapS=THREE.RepeatWrapping;
         thisWallTexture.wrapT=THREE.RepeatWrapping;
-        thisWallTexture.repeat.set(0.2,0.2);
+        thisWallTexture.repeat.set(0.18,0.18);
       
 
         var thisWallPhysicsMaterial = Physijs.createMaterial(thisWallMaterial, 0, 0);
@@ -464,6 +470,7 @@ var game = (() => {
                      0.5+bricksSizeY/2+(bricksSizeY)*i,
                      startTileZ*TILE_SIZE +bricksSizeZ + (bricksSizeZ * j * (1 - vertical)) 
                 );
+                wall.castShadow = true;
                 wall.receiveShadow = true;
                 wall.name = "name";
                 scene.add(wall);
@@ -640,7 +647,8 @@ var game = (() => {
         renderer.setClearColor(0x404040, 1.0);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(CScreen.WIDTH, CScreen.HEIGHT);
-        renderer.shadowMap.enabled = true;
+        //renderer.shadowMap.enabled = true;
+        //renderer.shadowMapEnabled=true;
         console.log("Finished setting up Renderer...");
     }
 
@@ -648,6 +656,7 @@ var game = (() => {
     function setupCamera(): void {
         camera = new PerspectiveCamera(35, config.Screen.RATIO, 0.1, 300);
         camera.position.set(0, 8, 20);
+        
         //camera.rotation.set(0,0,0);
         //camera.lookAt(player.position);
         console.log("Finished setting up Camera..."
