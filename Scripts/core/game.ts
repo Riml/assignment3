@@ -80,6 +80,7 @@ var game = (() => {
     var playerMaterial: Physijs.Material;
     var player: Physijs.BoxMesh;
     var superVision: Array<Mesh>;
+    var superVision2: Array<Mesh>;
     //EaselJS and friends  
     var assests: createjs.LoadQueue;
     var canvas: HTMLElement;
@@ -144,7 +145,8 @@ var game = (() => {
         //define basic game values
         TILE_SIZE=5;
         superVision = new Array(0);
-
+        superVision2 = new Array(0);
+        
         // Check to see if we have pointerLock
         if (havePointerLock) {
             element = document.body;
@@ -246,7 +248,7 @@ var game = (() => {
                  }   
                     
                  //falling tiles, aka "shakeLand"
-                 else if(x==6&&z==5||x==7&&z==5)
+                 else if(x==6&&z==5||x==7&&z==5 || (z>=4 && z<=19 && x>=16 && x<=23))
                  {
                      createUnstableTile(groundMaterial,x,z);
                  }   
@@ -329,7 +331,8 @@ var game = (() => {
         createWall(20,16,4,0,"wall-h-3");
         createWall(14,20,6,0,"wall-h-4");
         createWall(6,24,0,0,"wall-h-5");
-        createWall(16,26,8,0,"wall-h-6");
+        createInvisibleWall(4,26,8,0,"invisible");
+        createWall(12,26,12,0,"wall-h-6");
         createWall(4,28,4,0,"wall-h-7"); 
         createWall(18,32,0,0,"wall-h-8"); 
         createWall(24,46,0,0,"wall-top-border"); 
@@ -341,7 +344,8 @@ var game = (() => {
         createWall(4,8,22,1,"wall-v-4");
         createWall(4,16,4,1,"wall-v-5");
         createWall(4,20,6,1,"wall-v-6");
-        createWall(2,26,8,1,"wall-v-7");
+        createWall(4,22,12,1,"wall-v-6.5");
+        createWall(6,26,8,1,"wall-v-7");
         createWall(4,32,18,1,"wall-v-8");
         createWall(46,0,24,1,"wall-right-border");
         
@@ -430,11 +434,46 @@ var game = (() => {
         
         wall.receiveShadow = true;
         wall.castShadow = true;
-        wall.name = "name";
+        wall.name = name;
         
         scene.add(wall);
         
     }
+      function createInvisibleWall( wallLenght:number, startTileX:number, startTileZ:number,vertical:number, name:string ){
+        wallLenght=TILE_SIZE*wallLenght;
+        var thisWallTexture:Texture = new THREE.TextureLoader().load( "./Assets/Textures/wall.png" );
+        thisWallTexture.wrapS=THREE.RepeatWrapping;
+        thisWallTexture.wrapT=THREE.RepeatWrapping;
+        thisWallTexture.repeat.set(wallLenght/10,1.1);
+        
+               
+        //var thisWallTextureNormal: Texture = new THREE.TextureLoader().load( "./Assets/Textures/wallNormal.png" );
+        //thisWallTextureNormal.wrapS=THREE.RepeatWrapping;
+        //thisWallTextureNormal.wrapT=THREE.RepeatWrapping;
+       // thisWallTextureNormal.repeat.set(wallLenght/30,1);
+        
+        var thisWallMaterial: THREE.MeshLambertMaterial = new THREE.MeshLambertMaterial;
+        thisWallMaterial.map=thisWallTexture;
+        thisWallMaterial.transparent=true;
+        //thisWallMaterial.bumpMap = thisWallTextureNormal;
+        //thisWallMaterial.bumpScale=1.2;
+        
+        var thisWallGeometry = new BoxGeometry(wallLenght*vertical+0.5, 6, wallLenght*(1-vertical)+0.5);
+       
+        var wall = new Mesh(thisWallGeometry, thisWallMaterial);
+        
+        wall.position.set(startTileX*TILE_SIZE-TILE_SIZE + (wallLenght*vertical)/2,3,startTileZ*TILE_SIZE-TILE_SIZE+(wallLenght*(1-vertical))/2);
+        
+        wall.receiveShadow = true;
+        wall.castShadow = true;
+        wall.name = name;
+        superVision2.push(wall);
+        scene.add(wall);
+        
+    }
+    
+    
+    
     function creatCrate(startTileX:number, startTileZ:number)
     {
         //var thisCrateTexture: Texture = new THREE.TextureLoader().load("./Assets/Textures/wall.png");
@@ -585,10 +624,16 @@ var game = (() => {
                     superVision.forEach(tile => {
                         tile.material.opacity=0.2;
                     });
+                     superVision2.forEach(tile => {
+                        tile.material.opacity=0.5;
+                    });
                 }
                 else{
                     superVision.forEach(tile => {
                         tile.material.opacity=0;
+                    });
+                    superVision2.forEach(tile => {
+                        tile.material.opacity=1;
                     });
                     
                 }    

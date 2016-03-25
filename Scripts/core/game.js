@@ -72,6 +72,7 @@ var game = (function () {
     var playerMaterial;
     var player;
     var superVision;
+    var superVision2;
     //EaselJS and friends  
     var assests;
     var canvas;
@@ -122,6 +123,7 @@ var game = (function () {
         //define basic game values
         TILE_SIZE = 5;
         superVision = new Array(0);
+        superVision2 = new Array(0);
         // Check to see if we have pointerLock
         if (havePointerLock) {
             element = document.body;
@@ -191,7 +193,7 @@ var game = (function () {
                 else if ((x == 15 && z == 9) || (x == 16 && z == 9) || (x == 17 && z == 9)) {
                     createInvisibleMiniTile(x, z);
                 }
-                else if (x == 6 && z == 5 || x == 7 && z == 5) {
+                else if (x == 6 && z == 5 || x == 7 && z == 5 || (z >= 4 && z <= 19 && x >= 16 && x <= 23)) {
                     createUnstableTile(groundMaterial, x, z);
                 }
                 else {
@@ -261,7 +263,8 @@ var game = (function () {
         createWall(20, 16, 4, 0, "wall-h-3");
         createWall(14, 20, 6, 0, "wall-h-4");
         createWall(6, 24, 0, 0, "wall-h-5");
-        createWall(16, 26, 8, 0, "wall-h-6");
+        createInvisibleWall(4, 26, 8, 0, "invisible");
+        createWall(12, 26, 12, 0, "wall-h-6");
         createWall(4, 28, 4, 0, "wall-h-7");
         createWall(18, 32, 0, 0, "wall-h-8");
         createWall(24, 46, 0, 0, "wall-top-border");
@@ -273,7 +276,8 @@ var game = (function () {
         createWall(4, 8, 22, 1, "wall-v-4");
         createWall(4, 16, 4, 1, "wall-v-5");
         createWall(4, 20, 6, 1, "wall-v-6");
-        createWall(2, 26, 8, 1, "wall-v-7");
+        createWall(4, 22, 12, 1, "wall-v-6.5");
+        createWall(6, 26, 8, 1, "wall-v-7");
         createWall(4, 32, 18, 1, "wall-v-8");
         createWall(46, 0, 24, 1, "wall-right-border");
         createBreakableWall(8, 21, 0);
@@ -343,7 +347,31 @@ var game = (function () {
         wall.position.set(startTileX * TILE_SIZE - TILE_SIZE + (wallLenght * vertical) / 2, 3, startTileZ * TILE_SIZE - TILE_SIZE + (wallLenght * (1 - vertical)) / 2);
         wall.receiveShadow = true;
         wall.castShadow = true;
-        wall.name = "name";
+        wall.name = name;
+        scene.add(wall);
+    }
+    function createInvisibleWall(wallLenght, startTileX, startTileZ, vertical, name) {
+        wallLenght = TILE_SIZE * wallLenght;
+        var thisWallTexture = new THREE.TextureLoader().load("./Assets/Textures/wall.png");
+        thisWallTexture.wrapS = THREE.RepeatWrapping;
+        thisWallTexture.wrapT = THREE.RepeatWrapping;
+        thisWallTexture.repeat.set(wallLenght / 10, 1.1);
+        //var thisWallTextureNormal: Texture = new THREE.TextureLoader().load( "./Assets/Textures/wallNormal.png" );
+        //thisWallTextureNormal.wrapS=THREE.RepeatWrapping;
+        //thisWallTextureNormal.wrapT=THREE.RepeatWrapping;
+        // thisWallTextureNormal.repeat.set(wallLenght/30,1);
+        var thisWallMaterial = new THREE.MeshLambertMaterial;
+        thisWallMaterial.map = thisWallTexture;
+        thisWallMaterial.transparent = true;
+        //thisWallMaterial.bumpMap = thisWallTextureNormal;
+        //thisWallMaterial.bumpScale=1.2;
+        var thisWallGeometry = new BoxGeometry(wallLenght * vertical + 0.5, 6, wallLenght * (1 - vertical) + 0.5);
+        var wall = new Mesh(thisWallGeometry, thisWallMaterial);
+        wall.position.set(startTileX * TILE_SIZE - TILE_SIZE + (wallLenght * vertical) / 2, 3, startTileZ * TILE_SIZE - TILE_SIZE + (wallLenght * (1 - vertical)) / 2);
+        wall.receiveShadow = true;
+        wall.castShadow = true;
+        wall.name = name;
+        superVision2.push(wall);
         scene.add(wall);
     }
     function creatCrate(startTileX, startTileZ) {
@@ -459,10 +487,16 @@ var game = (function () {
                 superVision.forEach(function (tile) {
                     tile.material.opacity = 0.2;
                 });
+                superVision2.forEach(function (tile) {
+                    tile.material.opacity = 0.5;
+                });
             }
             else {
                 superVision.forEach(function (tile) {
                     tile.material.opacity = 0;
+                });
+                superVision2.forEach(function (tile) {
+                    tile.material.opacity = 1;
                 });
             }
             keyboardControls.switchCat = false;
