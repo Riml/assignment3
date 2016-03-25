@@ -71,6 +71,7 @@ var game = (function () {
     var playerGeometry;
     var playerMaterial;
     var player;
+    var superVision;
     //EaselJS and friends  
     var assests;
     var canvas;
@@ -120,6 +121,7 @@ var game = (function () {
         mouseControls = new objects.MouseControls();
         //define basic game values
         TILE_SIZE = 5;
+        superVision = new Array(0);
         // Check to see if we have pointerLock
         if (havePointerLock) {
             element = document.body;
@@ -183,6 +185,12 @@ var game = (function () {
                 if ((x == 9 && z == 9) || (x == 9 && z == 10) || (x == 9 && z == 11) ||
                     (x == 10 && z == 10) || (x == 10 && z == 11)) { }
                 else if ((x == 2 && z == 4) || (x == 2 && z == 5) || (x == 2 && z == 6)) { }
+                else if ((x == 15 && z == 11) || (x == 15 && z == 10) ||
+                    (x == 16 && z == 11) || (x == 16 && z == 10) ||
+                    (x == 17 && z == 10) || (x == 17 && z == 11)) { }
+                else if ((x == 15 && z == 9) || (x == 16 && z == 9) || (x == 17 && z == 9)) {
+                    createInvisibleMiniTile(x, z);
+                }
                 else if (x == 6 && z == 5 || x == 7 && z == 5) {
                     createUnstableTile(groundMaterial, x, z);
                 }
@@ -197,10 +205,10 @@ var game = (function () {
                 }
             }
         }
-        groundGeometry = new BoxGeometry(TILE_SIZE * 30, 0.1, TILE_SIZE * 50);
+        groundGeometry = new BoxGeometry(TILE_SIZE * 60, 0.1, TILE_SIZE * 150);
         groundPhysicsMaterial = Physijs.createMaterial(new THREE.MeshBasicMaterial({ color: 0x000000 }), 10000, 0.1);
         var deathGround = new Physijs.BoxMesh(groundGeometry, groundPhysicsMaterial, 0);
-        deathGround.position.set((TILE_SIZE * 30) / 2, -TILE_SIZE * 1.5, (TILE_SIZE * 50) / 2);
+        deathGround.position.set((TILE_SIZE * 60) / 2, -TILE_SIZE * 1.5, (TILE_SIZE * 150) / 2);
         deathGround.name = "DeathPlane";
         scene.add(deathGround);
         //ground.position.set(24* TILE_SIZE/2,0,46* TILE_SIZE/2);
@@ -346,13 +354,25 @@ var game = (function () {
         //thisWallTexture.wrapT=THREE.RepeatWrapping;
         //  thisWallTexture.repeat.set(0.1,0.1);
         var thisCratePhysicsMaterial = Physijs.createMaterial(thisCrateMaterial, 10, 0.1);
-        var thisCrateGeometry = new BoxGeometry(TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        var thisCrateGeometry = new BoxGeometry(TILE_SIZE * 1.2, TILE_SIZE * 1.2, TILE_SIZE * 1.2);
         var crate = new Physijs.BoxMesh(thisCrateGeometry, thisCratePhysicsMaterial, 100);
         crate.position.set(startTileX * TILE_SIZE + TILE_SIZE / 2, 0.5 + TILE_SIZE / 2, startTileZ * TILE_SIZE + TILE_SIZE / 2);
         crate.receiveShadow = true;
         crate.castShadow = true;
         crate.name = "Ground";
         scene.add(crate);
+    }
+    function createInvisibleMiniTile(x, z) {
+        var groundMaterial = new THREE.MeshPhongMaterial({ color: 0xffFFff });
+        groundMaterial.transparent = true;
+        groundMaterial.opacity = 0;
+        groundGeometry = new BoxGeometry(TILE_SIZE * 2, 0.2, TILE_SIZE * 0.5);
+        groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
+        ground = new Physijs.BoxMesh(groundGeometry, groundPhysicsMaterial, 0);
+        ground.position.set((x) * (TILE_SIZE * 2), 0.4, (z) * (TILE_SIZE * 2)); // -1 for exatra tiles around the maze, for the walls
+        superVision.push(ground);
+        ground.name = "Ground";
+        scene.add(ground);
     }
     function createBreakableWall(startTileX, startTileZ, vertical) {
         var bricksColumns = 9;
@@ -435,6 +455,16 @@ var game = (function () {
             currentCat++;
             if (currentCat == 3)
                 currentCat = 0;
+            if (currentCat == 1) {
+                superVision.forEach(function (tile) {
+                    tile.material.opacity = 0.2;
+                });
+            }
+            else {
+                superVision.forEach(function (tile) {
+                    tile.material.opacity = 0;
+                });
+            }
             keyboardControls.switchCat = false;
             catEars[0].material = catMaterials[currentCat];
             catEars[1].material = catMaterials[currentCat];
@@ -451,6 +481,7 @@ var game = (function () {
             var time = performance.now();
             var delta = (time - prevTime) / 1000;
             if (isGrounded) {
+                player.setAngularFactor(new Vector3(0, 0, 0));
                 var direction = new Vector3(0, 0, 0);
                 if (keyboardControls.moveForward) {
                     velocity.z -= catVelocities[currentCat] * delta;

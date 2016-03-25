@@ -79,6 +79,7 @@ var game = (() => {
     var playerGeometry: SphereGeometry;
     var playerMaterial: Physijs.Material;
     var player: Physijs.BoxMesh;
+    var superVision: Array<Mesh>;
     //EaselJS and friends  
     var assests: createjs.LoadQueue;
     var canvas: HTMLElement;
@@ -87,6 +88,8 @@ var game = (() => {
     var scoreValue: number;
     var livesLabel: createjs.Text;
     var livesValue: number;
+    
+    
     
     var TILE_SIZE:number;//to scale map(walls, hazards,ground and maybe skybox), should be constant
     
@@ -140,6 +143,7 @@ var game = (() => {
         
         //define basic game values
         TILE_SIZE=5;
+        superVision = new Array(0);
 
         // Check to see if we have pointerLock
         if (havePointerLock) {
@@ -230,6 +234,18 @@ var game = (() => {
                  //pits second-block
                  else if((x==2 && z==4) || (x==2 && z==5) || (x==2 && z==6))
                     {}
+                 //pits third-block
+                 else if((x==15 && z==11) || (x==15 && z==10) ||
+                    (x==16 && z==11) || (x==16 && z==10) ||
+                    (x==17 && z==10) ||(x==17 && z==11))
+                    { }
+                 //invisible tiles for third pitblock
+                 else if((x==15 && z==9)|| (x==16 && z==9)|| (x==17 && z==9))
+                 {
+                        createInvisibleMiniTile(x,z);  
+                 }   
+                    
+                 //falling tiles, aka "shakeLand"
                  else if(x==6&&z==5||x==7&&z==5)
                  {
                      createUnstableTile(groundMaterial,x,z);
@@ -247,10 +263,10 @@ var game = (() => {
              }
         }
         
-         groundGeometry = new BoxGeometry(TILE_SIZE*30, 0.1, TILE_SIZE*50);
+         groundGeometry = new BoxGeometry(TILE_SIZE*60, 0.1, TILE_SIZE*150);
          groundPhysicsMaterial = Physijs.createMaterial(new THREE.MeshBasicMaterial( {color: 0x000000} ), 10000, 0.1);
          var deathGround = new Physijs.BoxMesh(groundGeometry, groundPhysicsMaterial, 0);
-         deathGround.position.set((TILE_SIZE*30)/2,-TILE_SIZE*1.5,(TILE_SIZE*50)/2);
+         deathGround.position.set((TILE_SIZE*60)/2,-TILE_SIZE*1.5,(TILE_SIZE*150)/2);
          deathGround.name = "DeathPlane";
          scene.add(deathGround);
          
@@ -430,7 +446,7 @@ var game = (() => {
       
 
         var thisCratePhysicsMaterial = Physijs.createMaterial(thisCrateMaterial, 10, 0.1);
-        var thisCrateGeometry = new BoxGeometry(TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        var thisCrateGeometry = new BoxGeometry(TILE_SIZE*1.2, TILE_SIZE*1.2, TILE_SIZE*1.2);
         
         var crate = new Physijs.BoxMesh(thisCrateGeometry, thisCratePhysicsMaterial, 100);
         crate.position.set(
@@ -443,6 +459,21 @@ var game = (() => {
        crate.name = "Ground";
        scene.add(crate);
         
+    }
+    function createInvisibleMiniTile(x: number, z: number):void {
+          
+          var groundMaterial : THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial({color:0xffFFff});
+          groundMaterial.transparent=true;
+          groundMaterial.opacity=0;
+          groundGeometry = new BoxGeometry(TILE_SIZE*2, 0.2, TILE_SIZE*0.5);
+          groundPhysicsMaterial = Physijs.createMaterial(groundMaterial, 0.1, 0.1);
+          ground = new Physijs.BoxMesh(groundGeometry, groundPhysicsMaterial, 0);
+         
+          ground.position.set((x)*(TILE_SIZE*2),0.4,(z)*(TILE_SIZE*2)); // -1 for exatra tiles around the maze, for the walls
+          superVision.push(ground);
+          ground.name = "Ground";
+          scene.add(ground);
+          
     }
     function createBreakableWall(startTileX: number, startTileZ: number, vertical: number): void {
 
@@ -549,6 +580,18 @@ var game = (() => {
                 currentCat++;
                 if(currentCat==3)
                     currentCat=0;
+                if(currentCat==1)
+                {
+                    superVision.forEach(tile => {
+                        tile.material.opacity=0.2;
+                    });
+                }
+                else{
+                    superVision.forEach(tile => {
+                        tile.material.opacity=0;
+                    });
+                    
+                }    
                 keyboardControls.switchCat=false; 
                 
                 catEars[0].material = catMaterials[currentCat];
@@ -570,6 +613,7 @@ var game = (() => {
             var delta: number = (time - prevTime) / 1000;
 
             if (isGrounded) {
+                player.setAngularFactor(new Vector3(0,0,0));
                 var direction = new Vector3(0, 0, 0);
                 if (keyboardControls.moveForward) {
                     velocity.z -= catVelocities[currentCat] * delta;
