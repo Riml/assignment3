@@ -17,21 +17,15 @@ var CubeGeometry = THREE.CubeGeometry;
 var PlaneGeometry = THREE.PlaneGeometry;
 var SphereGeometry = THREE.SphereGeometry;
 var Geometry = THREE.Geometry;
-//import AxisHelper = THREE.AxisHelper;
 var LambertMaterial = THREE.MeshLambertMaterial;
 var MeshBasicMaterial = THREE.MeshBasicMaterial;
-//import LineBasicMaterial = THREE.LineBasicMaterial;
 var Material = THREE.Material;
-//import Line = THREE.Line;
 var Mesh = THREE.Mesh;
 var Object3D = THREE.Object3D;
 var SpotLight = THREE.SpotLight;
-//import PointLight = THREE.PointLight;
 var AmbientLight = THREE.AmbientLight;
 var Color = THREE.Color;
 var Vector3 = THREE.Vector3;
-//import Face3 = THREE.Face3;
-//import Point = objects.Point;
 var CScreen = config.Screen;
 var Clock = THREE.Clock;
 var Texture = THREE.Texture;
@@ -69,7 +63,7 @@ var game = (function () {
     var catEars;
     var catTextures;
     var catMaterials; // sounds creepy, but what to do
-    var currentCat; //0-fat,1-fast, 2-royal
+    var currentCat; //0-fat,1-fast, 2-Spy
     var catMasses;
     var catVelocities;
     var currentCatMaterial;

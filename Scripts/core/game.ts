@@ -19,23 +19,22 @@ import CubeGeometry = THREE.CubeGeometry;
 import PlaneGeometry = THREE.PlaneGeometry;
 import SphereGeometry = THREE.SphereGeometry;
 import Geometry = THREE.Geometry;
-//import AxisHelper = THREE.AxisHelper;
+
 import LambertMaterial = THREE.MeshLambertMaterial;
 import MeshBasicMaterial = THREE.MeshBasicMaterial;
-//import LineBasicMaterial = THREE.LineBasicMaterial;
+
 import Material = THREE.Material;
-//import Line = THREE.Line;
+
 import Mesh = THREE.Mesh;
 import Object3D = THREE.Object3D;
 import SpotLight = THREE.SpotLight;
-//import PointLight = THREE.PointLight;
+
 import AmbientLight = THREE.AmbientLight;
 
 
 import Color = THREE.Color;
 import Vector3 = THREE.Vector3;
-//import Face3 = THREE.Face3;
-//import Point = objects.Point;
+
 import CScreen = config.Screen;
 import Clock = THREE.Clock;
 import Texture = THREE.Texture;
@@ -75,12 +74,12 @@ var game = (() => {
     var isGrounded: boolean;
     var velocity: Vector3 = new Vector3(0, 0, 0);
     var prevTime: number = 0;
-     //Player realted variables
+    //Player realted variables
     var playerVisual:Mesh;
     var catEars: Array<Mesh>;
     var catTextures: Array<Texture>;
     var catMaterials: Array<Material>;// sounds creepy, but what to do
-    var currentCat: number;//0-fat,1-fast, 2-royal
+    var currentCat: number;//0-fat,1-fast, 2-Spy
     var catMasses: Array<number>;
     var catVelocities: Array<number>;
     var currentCatMaterial: THREE.Material;
@@ -102,7 +101,7 @@ var game = (() => {
     
     var TILE_SIZE:number;//to scale map(walls, hazards,ground and maybe skybox), should be constant
     
-     var manifest =[
+    var manifest =[
          {id:"land", src:"../../Assets/sound/Land.wav"}
      ];
     
