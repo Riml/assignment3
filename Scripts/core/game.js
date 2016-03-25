@@ -1,5 +1,13 @@
 /// <reference path="_reference.ts"/>
 // MAIN GAME FILE
+/*
+ADVANCED_GRAPHICS_COMP392_A3
+CENTENNIAL_COLLEGE_W2016
+Author: Ilmir Taychinov 300760705
+Based on: Tom Tsiliopoulos template
+Created: 7 March 2016
+Last Modified: 25 March 2016
+*/
 // THREEJS Aliases
 var Scene = Physijs.Scene;
 var Renderer = THREE.WebGLRenderer;
@@ -9,27 +17,25 @@ var CubeGeometry = THREE.CubeGeometry;
 var PlaneGeometry = THREE.PlaneGeometry;
 var SphereGeometry = THREE.SphereGeometry;
 var Geometry = THREE.Geometry;
-var AxisHelper = THREE.AxisHelper;
+//import AxisHelper = THREE.AxisHelper;
 var LambertMaterial = THREE.MeshLambertMaterial;
 var MeshBasicMaterial = THREE.MeshBasicMaterial;
-var LineBasicMaterial = THREE.LineBasicMaterial;
+//import LineBasicMaterial = THREE.LineBasicMaterial;
 var Material = THREE.Material;
-var Line = THREE.Line;
+//import Line = THREE.Line;
 var Mesh = THREE.Mesh;
 var Object3D = THREE.Object3D;
 var SpotLight = THREE.SpotLight;
-var PointLight = THREE.PointLight;
+//import PointLight = THREE.PointLight;
 var AmbientLight = THREE.AmbientLight;
-var Control = objects.Control;
 var Color = THREE.Color;
 var Vector3 = THREE.Vector3;
-var Face3 = THREE.Face3;
-var Point = objects.Point;
+//import Face3 = THREE.Face3;
+//import Point = objects.Point;
 var CScreen = config.Screen;
 var Clock = THREE.Clock;
 var Texture = THREE.Texture;
 //Custom Game Objects
-var gameObject = objects.gameObject;
 // Setup a Web Worker for Physijs
 Physijs.scripts.worker = "/Scripts/lib/Physijs/physijs_worker.js";
 Physijs.scripts.ammo = "/Scripts/lib/Physijs/examples/js/ammo.js";
@@ -42,7 +48,6 @@ var game = (function () {
     var scene = new Scene(); // Instantiate Scene Object
     var renderer;
     var camera;
-    var control;
     var stats;
     var blocker;
     var instructions;

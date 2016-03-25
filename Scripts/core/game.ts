@@ -1,6 +1,14 @@
 /// <reference path="_reference.ts"/>
 
 // MAIN GAME FILE
+/*
+ADVANCED_GRAPHICS_COMP392_A3
+CENTENNIAL_COLLEGE_W2016
+Author: Ilmir Taychinov 300760705
+Based on: Tom Tsiliopoulos template 
+Created: 7 March 2016
+Last Modified: 25 March 2016 
+*/
 
 // THREEJS Aliases
 import Scene = Physijs.Scene;
@@ -11,29 +19,29 @@ import CubeGeometry = THREE.CubeGeometry;
 import PlaneGeometry = THREE.PlaneGeometry;
 import SphereGeometry = THREE.SphereGeometry;
 import Geometry = THREE.Geometry;
-import AxisHelper = THREE.AxisHelper;
+//import AxisHelper = THREE.AxisHelper;
 import LambertMaterial = THREE.MeshLambertMaterial;
 import MeshBasicMaterial = THREE.MeshBasicMaterial;
-import LineBasicMaterial = THREE.LineBasicMaterial;
+//import LineBasicMaterial = THREE.LineBasicMaterial;
 import Material = THREE.Material;
-import Line = THREE.Line;
+//import Line = THREE.Line;
 import Mesh = THREE.Mesh;
 import Object3D = THREE.Object3D;
 import SpotLight = THREE.SpotLight;
-import PointLight = THREE.PointLight;
+//import PointLight = THREE.PointLight;
 import AmbientLight = THREE.AmbientLight;
-import Control = objects.Control;
+
 
 import Color = THREE.Color;
 import Vector3 = THREE.Vector3;
-import Face3 = THREE.Face3;
-import Point = objects.Point;
+//import Face3 = THREE.Face3;
+//import Point = objects.Point;
 import CScreen = config.Screen;
 import Clock = THREE.Clock;
 import Texture = THREE.Texture;
 
 //Custom Game Objects
-import gameObject = objects.gameObject;
+
 
 // Setup a Web Worker for Physijs
 Physijs.scripts.worker = "/Scripts/lib/Physijs/physijs_worker.js";
@@ -50,7 +58,7 @@ var game = (() => {
     var scene: Scene = new Scene(); // Instantiate Scene Object
     var renderer: Renderer;
     var camera: PerspectiveCamera;
-    var control: Control;
+  
     var stats: Stats;
     var blocker: HTMLElement;
     var instructions: HTMLElement;
