@@ -95,6 +95,8 @@ var game = (() => {
     var finalCatMaterial: Physijs.Material;
     var finalCat: Physijs.SphereMesh;
     
+    var gameFinished:boolean =false;
+    
     var manifest =[
          {id:"land", src:"../../Assets/Sound/Land.wav"},
          {id:"bg_music", src:"../../Assets/Sound/LOUD_RAIN_Gothic.myStory.mp3"}
@@ -105,7 +107,7 @@ var game = (() => {
         scoreValue=0;
         livesValue=3;
         
-        scoreLabel=new createjs.Text("Score: "+ scoreValue, "40px Arial","#FFffFF");
+        scoreLabel=new createjs.Text("Time: "+ scoreValue, "40px Arial","#FFffFF");
         scoreLabel.x = config.Screen.WIDTH*0.1;
         scoreLabel.y = (config.Screen.HEIGHT*0.1)*0.3;
         livesLabel=new createjs.Text("Lives: "+ livesValue, "40px Arial","#FFffFF");
@@ -321,9 +323,25 @@ var game = (() => {
         
         //add final cat
         var basicFinalCatMaterial:LambertMaterial =new LambertMaterial({ color: 0xFFffFF, map: new THREE.TextureLoader().load( "./Assets/Textures/Cat.png" )});
+        var basicFinalCatEarsMaterial:LambertMaterial =new LambertMaterial({ color: 0xFFffFF, map: new THREE.TextureLoader().load( "./Assets/Textures/Ears.png" )});
         finalCatMaterial = Physijs.createMaterial(basicFinalCatMaterial, 0, 0);
-        finalCat = new Physijs.SphereMesh(playerGeometry, finalCatMaterial, 0);
+        finalCat = new Physijs.SphereMesh(playerGeometry, finalCatMaterial, 1000);
+        
+        var geometry = new THREE.CylinderGeometry( 0.01, 0.8, 2, 9 );
+        var material = currentCatMaterial;
+        var ear1:Mesh= new THREE.Mesh( geometry, basicFinalCatEarsMaterial );
+        var ear2:Mesh= new THREE.Mesh( geometry, basicFinalCatEarsMaterial );
+        ear1.position.set(0,1.4,0.8);
+        ear2.position.set(0,1.4,-0.8);
+        
+        finalCat.add(ear1);
+        finalCat.add(ear2);
+               
+        finalCat.position.set(42*TILE_SIZE, 5,TILE_SIZE*2);
+        finalCat.rotation.y=THREE.Math.degToRad(-90);
+       
         finalCat.name="final";
+        scene.add(finalCat);
         
         //---------------------------Level Creation-----------------------------------------------
         //horizontal
@@ -370,6 +388,12 @@ var game = (() => {
                 console.log("cat step on shaking land");
                isGrounded = true;
                coll.mass=0.01;
+            }
+            if (coll.name === "final" ) {
+               gameFinished=true;
+               scoreLabel.text=" The Cats are safe for now! Thanks to you! your time is "+Math.round(scoreValue);
+               livesLabel.text="";
+               return;
             }
            
             
@@ -601,6 +625,7 @@ var game = (() => {
 
     // Add Frame Rate Stats to the Scene
     function addStatsObject() {
+       
         stats = new Stats();
         stats.setMode(0);
         stats.domElement.style.position = 'absolute';
@@ -610,9 +635,15 @@ var game = (() => {
     }
 
     // Setup main game loop
-    function gameLoop(): void {
+    function gameLoop(): void { 
+        if(!gameFinished)
+        {
+            scoreValue+=clock.getDelta ();
+            scoreLabel.text="Time: "+ Math.round(scoreValue);
+            checkControls();
+        }
+      
         stats.update();
-        checkControls();
         stage.update();
         
            
