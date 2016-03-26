@@ -84,6 +84,10 @@ var game = (function () {
     var livesValue;
     //Constants    
     var TILE_SIZE; //to scale map(walls, hazards,ground and maybe skybox)
+    //NPC
+    var finalCatGeometry;
+    var finalCatMaterial;
+    var finalCat;
     var manifest = [
         { id: "land", src: "../../Assets/Sound/Land.wav" },
         { id: "bg_music", src: "../../Assets/Sound/LOUD_RAIN_Gothic.myStory.mp3" }
@@ -95,9 +99,10 @@ var game = (function () {
         scoreLabel.x = config.Screen.WIDTH * 0.1;
         scoreLabel.y = (config.Screen.HEIGHT * 0.1) * 0.3;
         livesLabel = new createjs.Text("Lives: " + livesValue, "40px Arial", "#FFffFF");
-        livesLabel.x = config.Screen.WIDTH * 0.1;
-        livesLabel.y = (config.Screen.HEIGHT * 0.1) * 0.7;
+        livesLabel.x = config.Screen.WIDTH * 0.7;
+        livesLabel.y = (config.Screen.HEIGHT * 0.1) * 0.3;
         stage.addChild(scoreLabel);
+        stage.addChild(livesLabel);
     }
     function preload() {
         assests = new createjs.LoadQueue();
@@ -168,7 +173,7 @@ var game = (function () {
         spotLight.shadowCameraFar = 1200;
         spotLight.shadowMapWidth = 2048;
         spotLight.shadowMapHeight = 2048;
-        spotLight.shadowDarkness = 1.5;
+        spotLight.shadowDarkness = 1.4;
         spotLight.name = "Spot Light";
         scene.add(spotLight);
         ambientLight = new AmbientLight(0x232323);
@@ -178,10 +183,10 @@ var game = (function () {
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
         groundTexture.repeat.set(1, 1);
-        var groundTextureNormal = new THREE.TextureLoader().load("./Assets/Textures/floorNormal.png");
-        groundTextureNormal.wrapS = THREE.RepeatWrapping;
-        groundTextureNormal.wrapT = THREE.RepeatWrapping;
-        groundTextureNormal.repeat.set(1, 1);
+        // var groundTextureNormal: Texture = new THREE.TextureLoader().load( "./Assets/Textures/floorNormal.png" );
+        // groundTextureNormal.wrapS=THREE.RepeatWrapping;
+        // groundTextureNormal.wrapT=THREE.RepeatWrapping;
+        // groundTextureNormal.repeat.set(1,1);
         var groundMaterial = new THREE.MeshLambertMaterial;
         groundMaterial.map = groundTexture;
         //groundMaterial.bumpMap = groundTextureNormal;
@@ -264,6 +269,11 @@ var game = (function () {
         player.setAngularFactor(new Vector3(0, 0, 0));
         scene.add(player);
         console.log("Added Player to Scene");
+        //add final cat
+        var basicFinalCatMaterial = new LambertMaterial({ color: 0xFFffFF, map: new THREE.TextureLoader().load("./Assets/Textures/Cat.png") });
+        finalCatMaterial = Physijs.createMaterial(basicFinalCatMaterial, 0, 0);
+        finalCat = new Physijs.SphereMesh(playerGeometry, finalCatMaterial, 0);
+        finalCat.name = "final";
         //---------------------------Level Creation-----------------------------------------------
         //horizontal
         createWall(24, 0, 0, 0, "wall-bottom-border");
@@ -308,8 +318,14 @@ var game = (function () {
             }
             if (coll.name === "DeathPlane") {
                 createjs.Sound.play("hit");
-                //livesValue--;
-                //livesLabel.text = "LIVES: " + livesValue;
+                isGrounded = false;
+                livesValue--;
+                if (livesValue < 0) {
+                    scoreLabel.text = " You didn't win, but don't worry - you can try again! (press F5) the Cats are waiting for you! :3 ";
+                    livesLabel.text = "";
+                    return;
+                }
+                livesLabel.text = "Lives: " + livesValue;
                 scene.remove(player);
                 player.rotation.set(0, 0, 0);
                 player.setAngularFactor(new Vector3(0, 0, 0));
@@ -523,17 +539,18 @@ var game = (function () {
     }
     //check controls
     function checkControls() {
+        //possible to mute always just in case of really loud sounds
+        if (keyboardControls.switchMute) {
+            createjs.Sound.muted = mute;
+            keyboardControls.switchMute = false;
+            mute = !mute;
+            console.log("Mute is " + mute);
+        }
         if (keyboardControls.enabled) {
             velocity = new Vector3();
             switchCurrentCat();
             var time = performance.now();
             var delta = (time - prevTime) / 1000;
-            if (keyboardControls.switchMute) {
-                createjs.Sound.muted = mute;
-                keyboardControls.switchMute = false;
-                mute = !mute;
-                console.log("Mute is " + mute);
-            }
             if (isGrounded) {
                 player.setAngularFactor(new Vector3(0, 0, 0));
                 var direction = new Vector3(0, 0, 0);
