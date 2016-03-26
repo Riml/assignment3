@@ -18,12 +18,11 @@ var objects;
             // document.addEventListener('keypressed',this.onKeyPress.bind(this), false);
         }
         // PUBLIC METHODS
-        KeyboardControls.prototype.onKeyPress = function (event) {
-            switch (event.keyCode) {
-            }
-        };
         KeyboardControls.prototype.onKeyDown = function (event) {
             switch (event.keyCode) {
+                case 77:
+                    this.switchMute = true;
+                    break;
                 case 81:
                     this.switchCat = true;
                     break;
@@ -50,6 +49,9 @@ var objects;
         };
         KeyboardControls.prototype.onKeyUp = function (event) {
             switch (event.keyCode) {
+                case 77:
+                    this.switchMute = false;
+                    break;
                 case 81:
                     this.switchCat = false;
                     break;

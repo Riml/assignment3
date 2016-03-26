@@ -20,7 +20,7 @@ var objects;
         }
         MouseControls.prototype.OnMouseMove = function (event) {
             this.yaw = event.movementX * this.sensitivity * 4;
-            this.pitch = event.movementY * this.sensitivity * 0.05;
+            this.pitch = event.movementY * this.sensitivity * 0.02;
         };
         return MouseControls;
     }());

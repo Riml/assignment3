@@ -17,6 +17,7 @@ module objects {
         public switchCat: boolean;
         public jump: boolean;
         public enabled: boolean;
+        public switchMute:boolean;
         // CONSTRUCTOR ++++++++++++++++++++++++++    
         constructor() {
             this.enabled = false;
@@ -26,15 +27,12 @@ module objects {
         }
 
         // PUBLIC METHODS
-        public onKeyPress(event: KeyboardEvent):void{
-            
-             switch (event.keyCode) {
-                 
-             }
-        }
-        
+    
         public onKeyDown(event: KeyboardEvent): void {
             switch (event.keyCode) {
+                 case 77: /* M key */
+                    this.switchMute = true;
+                    break;
                 case 81: /* Q key */
                     this.switchCat = true;
                     break;
@@ -62,6 +60,9 @@ module objects {
 
         public onKeyUp(event: KeyboardEvent): void {
             switch (event.keyCode) {
+                 case 77: /* M key */
+                    this.switchMute = false;
+                    break;
                  case 81: /* Q key */
                     this.switchCat = false;
                     break;

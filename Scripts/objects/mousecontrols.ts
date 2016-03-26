@@ -28,7 +28,7 @@ module objects {
         public OnMouseMove(event: MouseEvent):void{
             this.yaw = event.movementX*this.sensitivity*4;
             
-            this.pitch = event.movementY*this.sensitivity*0.05;
+            this.pitch = event.movementY*this.sensitivity*0.02;
         }
     }
 }

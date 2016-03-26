@@ -1,13 +1,13 @@
 {
-  "name": "comp392-lesson9",
+  "name": "comp392-a3",
   "authors": [
-    "Tom Tsiliopoulos <tsiliopoulos@hotmail.com>"
+    "Ilmir Taychinov  <ilmir.taychinov@gmail.com>"
   ],
-  "description": "COMP392 Lesson 9 for Advanced Graphics",
+  "description": "COMP392 - 'lost kittens' maze games",
   "main": "",
   "moduleType": [],
   "license": "MIT",
-  "homepage": "https://github.com/CentennialCollege/COMP392-Lesson8",
+  "homepage": "https://github.com/Riml/assignment3",
   "ignore": [
     "**/.*",
     "node_modules",

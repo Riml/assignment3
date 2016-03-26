@@ -19,37 +19,26 @@ import CubeGeometry = THREE.CubeGeometry;
 import PlaneGeometry = THREE.PlaneGeometry;
 import SphereGeometry = THREE.SphereGeometry;
 import Geometry = THREE.Geometry;
-
 import LambertMaterial = THREE.MeshLambertMaterial;
 import MeshBasicMaterial = THREE.MeshBasicMaterial;
-
 import Material = THREE.Material;
-
 import Mesh = THREE.Mesh;
 import Object3D = THREE.Object3D;
 import SpotLight = THREE.SpotLight;
-
 import AmbientLight = THREE.AmbientLight;
-
-
 import Color = THREE.Color;
 import Vector3 = THREE.Vector3;
-
 import CScreen = config.Screen;
 import Clock = THREE.Clock;
 import Texture = THREE.Texture;
-
 //Custom Game Objects
-
 
 // Setup a Web Worker for Physijs
 Physijs.scripts.worker = "/Scripts/lib/Physijs/physijs_worker.js";
 Physijs.scripts.ammo = "/Scripts/lib/Physijs/examples/js/ammo.js";
 
-
 // setup an IIFE structure (Immediately Invoked Function Expression)
 var game = (() => {
-
     //------------------------ declare game objects-------------------------------
     //basic
     var havePointerLock: boolean;
@@ -74,7 +63,9 @@ var game = (() => {
     var isGrounded: boolean;
     var velocity: Vector3 = new Vector3(0, 0, 0);
     var prevTime: number = 0;
+    var mute: boolean =true;
     //Player realted variables
+    var myPlayerGeometry: SphereGeometry;
     var playerVisual:Mesh;
     var catEars: Array<Mesh>;
     var catTextures: Array<Texture>;
@@ -85,7 +76,7 @@ var game = (() => {
     var currentCatMaterial: THREE.Material;
     var playerGeometry: SphereGeometry;
     var playerMaterial: Physijs.Material;
-    var player: Physijs.BoxMesh;
+    var player: Physijs.SphereMesh;
     var superVision: Array<Mesh>;
     var superVision2: Array<Mesh>;
     //EaselJS and friends  
@@ -96,21 +87,25 @@ var game = (() => {
     var scoreValue: number;
     var livesLabel: createjs.Text;
     var livesValue: number;
-    
-    
-    
-    var TILE_SIZE:number;//to scale map(walls, hazards,ground and maybe skybox), should be constant
+    //Constants    
+    var TILE_SIZE:number;//to scale map(walls, hazards,ground and maybe skybox)
     
     var manifest =[
-         {id:"land", src:"../../Assets/sound/Land.wav"}
+         {id:"land", src:"../../Assets/Sound/Land.wav"},
+         {id:"bg_music", src:"../../Assets/Sound/LOUD_RAIN_Gothic.myStory.mp3"}
+         
      ];
     
     function setupScoreboard():void {
         scoreValue=0;
+        livesValue=3;
         
         scoreLabel=new createjs.Text("Score: "+ scoreValue, "40px Arial","#FFffFF");
         scoreLabel.x = config.Screen.WIDTH*0.1;
         scoreLabel.y = (config.Screen.HEIGHT*0.1)*0.3;
+        livesLabel=new createjs.Text("Lives: "+ livesValue, "40px Arial","#FFffFF");
+        livesLabel.x = config.Screen.WIDTH*0.1;
+        livesLabel.y = (config.Screen.HEIGHT*0.1)*0.7;
         
         stage.addChild(scoreLabel);
     }
@@ -120,7 +115,8 @@ var game = (() => {
         assests.installPlugin(createjs.Sound);
         assests.on("complete",init,this);
         assests.loadManifest(manifest);
-    } 
+    }
+     
     function setupCanvas():void {
         canvas = document.getElementById("canvas");
         canvas.setAttribute("width",config.Screen.WIDTH.toString());
@@ -129,37 +125,29 @@ var game = (() => {
         stage =  new createjs.Stage(canvas);
     } 
 
- 
-
     function init() {
-        setupCanvas();
+       
         scene.setGravity(new Vector3(0,0,0));
         // Create to HTMLElements
         blocker = document.getElementById("blocker");
         instructions = document.getElementById("instructions");
-
         setupCanvas();  
         setupScoreboard();  
         //check to see if pointerlock is supported
         havePointerLock = 'pointerLockElement' in document ||
             'mozPointerLockElement' in document ||
             'webkitPointerLockElement' in document;
-
         // Instantiate Game Controls
         keyboardControls = new objects.KeyboardControls();
         mouseControls = new objects.MouseControls();
-        
         //define basic game values
         TILE_SIZE=5;
         superVision = new Array(0);
         superVision2 = new Array(0);
-        
         // Check to see if we have pointerLock
         if (havePointerLock) {
             element = document.body;
-
             instructions.addEventListener('click', () => {
-
                 // Ask the user for pointer lock
                 console.log("Requesting PointerLock");
 
@@ -169,7 +157,6 @@ var game = (() => {
 
                 element.requestPointerLock();
             });
-
             document.addEventListener('pointerlockchange', pointerLockChange);
             document.addEventListener('mozpointerlockchange', pointerLockChange);
             document.addEventListener('webkitpointerlockchange', pointerLockChange);
@@ -177,23 +164,16 @@ var game = (() => {
             document.addEventListener('mozpointerlockerror', pointerLockError);
             document.addEventListener('webkitpointerlockerror', pointerLockError);
         }
-
         //-------------------------- Scene changes for Physijs-------------------------------------------------------
         scene.name = "Main";
         scene.fog = new THREE.Fog(0xffffff, 0, 750);
         //scene.setGravity(new THREE.Vector3(0, -10, 0));
-
         scene.addEventListener('update', () => {
             scene.simulate(undefined, 2);
         });
-
         // setup a THREE.JS Clock object
         clock = new Clock();
-
         setupRenderer(); // setup the default renderer
-
-        
-
         // --------------------------------------------Add Lights---------------------------------------------------------
         spotLight = new SpotLight(0xffffff);
         spotLight.position.set(5*TILE_SIZE, 500, 5*TILE_SIZE);
@@ -204,7 +184,7 @@ var game = (() => {
         spotLight.shadowCameraFar = 1200;
         spotLight.shadowMapWidth = 2048;
         spotLight.shadowMapHeight = 2048;
-        spotLight.shadowDarkness = 0.5;
+        spotLight.shadowDarkness = 1.5;
         spotLight.name = "Spot Light";
         scene.add(spotLight);
                    
@@ -212,18 +192,17 @@ var game = (() => {
         scene.add(ambientLight);
         
         
-        // ----------------------------------------Burnt Ground-----------------------------------------------------------
+        // ----------------------------------------Ground + Hazards-----------------------------------------------------------
         var groundTexture:Texture = new THREE.TextureLoader().load( "./Assets/Textures/floor.png" );
         groundTexture.wrapS=THREE.RepeatWrapping;
         groundTexture.wrapT=THREE.RepeatWrapping;
         groundTexture.repeat.set(1,1);
-        
-               
+     
         var groundTextureNormal: Texture = new THREE.TextureLoader().load( "./Assets/Textures/floorNormal.png" );
         groundTextureNormal.wrapS=THREE.RepeatWrapping;
         groundTextureNormal.wrapT=THREE.RepeatWrapping;
         groundTextureNormal.repeat.set(1,1);
-        
+       
          var groundMaterial: THREE.MeshLambertMaterial = new THREE.MeshLambertMaterial;
         groundMaterial.map=groundTexture;
         //groundMaterial.bumpMap = groundTextureNormal;
@@ -292,12 +271,12 @@ var game = (() => {
         catMaterials = new Array(3);
         catEars = new Array(2);
         catMasses = new Array(4000,2,1);
-        catVelocities = new Array(3000000,1000,1500);
+        catVelocities = new Array(3000000,2000,1300);
         catTextures[0] = new THREE.TextureLoader().load( "./Assets/Textures/Fur1.png" );
         catTextures[1] =  new THREE.TextureLoader().load("./Assets/Textures/Fur2.png");
         catTextures[2] =  new THREE.TextureLoader().load("./Assets/Textures/Fur3.png");
         currentCat=0;
-        var myPlayerGeometry = new SphereGeometry(2.1, 20, 20);
+        myPlayerGeometry = new SphereGeometry(1.86, 20, 20);
         catMaterials[0] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[0]});
         catMaterials[1] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[1]});
         catMaterials[2] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[2]});
@@ -306,21 +285,24 @@ var game = (() => {
         playerVisual.receiveShadow=true;
         playerVisual.castShadow=true;
         playerVisual.rotation.y = THREE.Math.degToRad(0);
-        playerGeometry = new SphereGeometry(2, 20, 20);
-        playerMaterial = Physijs.createMaterial(new LambertMaterial({ color: 0xFFffFF}), 0.4, 0);
+        playerGeometry = new SphereGeometry(1.7, 20, 20);
+        var playerTransparetMaterial:LambertMaterial =new LambertMaterial({ color: 0xFFffFF});
+        playerTransparetMaterial.transparent=true;
+        playerTransparetMaterial.opacity=0;
+        playerMaterial = Physijs.createMaterial(playerTransparetMaterial, 0.4, 0);
         player = new Physijs.SphereMesh(playerGeometry, playerMaterial, catMasses[currentCat]);
        
         player.name = "Player";
-        var geometry = new THREE.CylinderGeometry( 0.01, 1, 3, 9 );
+        var geometry = new THREE.CylinderGeometry( 0.01, 0.9, 3, 9 );
         var material = currentCatMaterial;
         catEars[0] = new THREE.Mesh( geometry, material );
         catEars[1] = new THREE.Mesh( geometry, material );
-        catEars[0].position.set(1,1.47,0);
-        catEars[1].position.set(-1,1.47,0);
+        catEars[0].position.set(0.9,1.4,0);
+        catEars[1].position.set(-0.9,1.4,0);
         
-        player.add(playerVisual);
-        player.add(catEars[0]);
-        player.add(catEars[1]);
+        player.add(playerVisual);//0
+        playerVisual.add(catEars[0]);
+        playerVisual.add(catEars[1]);
         catEars[0].receiveShadow=true;
         catEars[0].castShadow=true;
         catEars[1].receiveShadow=true;
@@ -364,7 +346,7 @@ var game = (() => {
         
         //------------SETUP THE CAMER:create parent.child for camera-player-------------------------
         setupCamera();
-        player.add(camera);
+        player.add(camera);//1
         //------------------------------------------------ Collision Check--------------------------
         player.addEventListener('collision', (coll) => {
             if (coll.name === "Ground" ) {
@@ -400,6 +382,7 @@ var game = (() => {
         scene.simulate();
 
         window.addEventListener('resize', onWindowResize, false);
+        createjs.Sound.play("bg_music",0,1,0,1,0.3);
         
     }
     //end of init
@@ -478,17 +461,16 @@ var game = (() => {
         scene.add(wall);
         
     }
-    
-    
+      
     
     function creatCrate(startTileX:number, startTileZ:number)
     {
-        //var thisCrateTexture: Texture = new THREE.TextureLoader().load("./Assets/Textures/wall.png");
-        var thisCrateMaterial: THREE.MeshLambertMaterial = new THREE.MeshLambertMaterial({color: 0xFACEee});
-       // thisCrateTexture.map = thisWallTexture;
-        //thisWallTexture.wrapS=THREE.RepeatWrapping;
-        //thisWallTexture.wrapT=THREE.RepeatWrapping;
-      //  thisWallTexture.repeat.set(0.1,0.1);
+       //var thisCrateTexture: Texture = new THREE.TextureLoader().load("./Assets/Textures/wall.png");
+       var thisCrateMaterial: THREE.MeshLambertMaterial = new THREE.MeshLambertMaterial({color: 0xFACEee});
+       //thisCrateTexture.map = thisWallTexture;
+       //thisWallTexture.wrapS=THREE.RepeatWrapping;
+       //thisWallTexture.wrapT=THREE.RepeatWrapping;
+       //thisWallTexture.repeat.set(0.1,0.1);
       
 
         var thisCratePhysicsMaterial = Physijs.createMaterial(thisCrateMaterial, 10, 0.1);
@@ -646,26 +628,42 @@ var game = (() => {
                 }    
                 keyboardControls.switchCat=false; 
                 
+                
                 catEars[0].material = catMaterials[currentCat];
                 catEars[1].material = catMaterials[currentCat];
                 playerVisual.material= catMaterials[currentCat];
-                player.scale.set(1/(currentCat+1),1/(currentCat+1),1/(currentCat+1)); //!!! Quite unpredictable things happenning here
+                var newSize:number = 1 /(currentCat*0.5+1); 
+                player.scale.set(newSize,newSize,newSize); //!!! Quite unpredictable things happenning here
+                player.children.forEach(element => {
+                    console.log("children " + element+" " +element.name);
+                }); 
                 player.mass = catMasses[currentCat];
             }
    }
     
     //check controls
-    function checkControls():void
-    {
+    function checkControls(): void {
         if (keyboardControls.enabled) {
             velocity = new Vector3();
             switchCurrentCat();
-            
+
             var time: number = performance.now();
             var delta: number = (time - prevTime) / 1000;
+          
+           
+            
+            if (keyboardControls.switchMute) {
+               
+                
+                createjs.Sound.muted = mute;
+                keyboardControls.switchMute=false;
+                mute= !mute;
+                console.log("Mute is " + mute);
+            }
+
 
             if (isGrounded) {
-                player.setAngularFactor(new Vector3(0,0,0));
+                player.setAngularFactor(new Vector3(0, 0, 0));
                 var direction = new Vector3(0, 0, 0);
                 if (keyboardControls.moveForward) {
                     velocity.z -= catVelocities[currentCat] * delta;
@@ -680,31 +678,30 @@ var game = (() => {
                     velocity.x += catVelocities[currentCat] * delta;
                 }
                 if (keyboardControls.jump) {
-                    if(currentCat==0)
-                    {
-                        
+                    if (currentCat == 0) {
+
                     }
-                    else if (currentCat==1){
-                        velocity.y += catVelocities[currentCat]*10 * delta;
+                    else if (currentCat == 1) {
+                        velocity.y += catVelocities[currentCat] * 5 * delta;
                         if (player.position.y > 4) {
                             isGrounded = false;
                         }
                     }
-                    else if(currentCat == 2){
-                    velocity.y += catVelocities[currentCat]*5 * delta;
-                    velocity.z -= catVelocities[currentCat]* 8 * delta;
+                    else if (currentCat == 2) {
+                        velocity.y += catVelocities[currentCat] * 5 * delta;
+                        velocity.z -= catVelocities[currentCat] * 8 * delta;
                         if (player.position.y > 3) {
                             isGrounded = false;
                         }
                     }
-                    
+
                 }
 
                 player.setDamping(0.7, 0.1);
                 // Changing player's rotation
-                var tempRot = THREE.Math.clamp(-mouseControls.yaw,-4,4);//values become crazy(up to 30), have to clamp
+                var tempRot = THREE.Math.clamp(-mouseControls.yaw, -4, 4);//values become crazy(up to 30), have to clamp
                 player.setAngularVelocity(new Vector3(0, tempRot, 0));
-              
+
                 direction.addVectors(direction, velocity);
                 direction.applyQuaternion(player.quaternion);
                 if (Math.abs(player.getLinearVelocity().x) < 20 && Math.abs(player.getLinearVelocity().y) < 10) {
@@ -713,17 +710,17 @@ var game = (() => {
                 cameraLook();
 
             } // isGrounded ends
-           mouseControls.pitch=0;
-           mouseControls.yaw=0;
-           
-           
+            mouseControls.pitch = 0;
+            mouseControls.yaw = 0;
+
+
             prevTime = time;
         } // Controls Enabled ends
         else {
-            player.setAngularVelocity(new Vector3(0, 0 , 0));   
+            player.setAngularVelocity(new Vector3(0, 0, 0));
         }
     }
-    
+
     //camera look function 
     function cameraLook():void {
         var zenith:number = THREE.Math.degToRad(5);

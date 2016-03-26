@@ -58,7 +58,9 @@ var game = (function () {
     var isGrounded;
     var velocity = new Vector3(0, 0, 0);
     var prevTime = 0;
+    var mute = true;
     //Player realted variables
+    var myPlayerGeometry;
     var playerVisual;
     var catEars;
     var catTextures;
@@ -80,15 +82,21 @@ var game = (function () {
     var scoreValue;
     var livesLabel;
     var livesValue;
-    var TILE_SIZE; //to scale map(walls, hazards,ground and maybe skybox), should be constant
+    //Constants    
+    var TILE_SIZE; //to scale map(walls, hazards,ground and maybe skybox)
     var manifest = [
-        { id: "land", src: "../../Assets/sound/Land.wav" }
+        { id: "land", src: "../../Assets/Sound/Land.wav" },
+        { id: "bg_music", src: "../../Assets/Sound/LOUD_RAIN_Gothic.myStory.mp3" }
     ];
     function setupScoreboard() {
         scoreValue = 0;
+        livesValue = 3;
         scoreLabel = new createjs.Text("Score: " + scoreValue, "40px Arial", "#FFffFF");
         scoreLabel.x = config.Screen.WIDTH * 0.1;
         scoreLabel.y = (config.Screen.HEIGHT * 0.1) * 0.3;
+        livesLabel = new createjs.Text("Lives: " + livesValue, "40px Arial", "#FFffFF");
+        livesLabel.x = config.Screen.WIDTH * 0.1;
+        livesLabel.y = (config.Screen.HEIGHT * 0.1) * 0.7;
         stage.addChild(scoreLabel);
     }
     function preload() {
@@ -105,7 +113,6 @@ var game = (function () {
         stage = new createjs.Stage(canvas);
     }
     function init() {
-        setupCanvas();
         scene.setGravity(new Vector3(0, 0, 0));
         // Create to HTMLElements
         blocker = document.getElementById("blocker");
@@ -161,12 +168,12 @@ var game = (function () {
         spotLight.shadowCameraFar = 1200;
         spotLight.shadowMapWidth = 2048;
         spotLight.shadowMapHeight = 2048;
-        spotLight.shadowDarkness = 0.5;
+        spotLight.shadowDarkness = 1.5;
         spotLight.name = "Spot Light";
         scene.add(spotLight);
         ambientLight = new AmbientLight(0x232323);
         scene.add(ambientLight);
-        // ----------------------------------------Burnt Ground-----------------------------------------------------------
+        // ----------------------------------------Ground + Hazards-----------------------------------------------------------
         var groundTexture = new THREE.TextureLoader().load("./Assets/Textures/floor.png");
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
@@ -219,12 +226,12 @@ var game = (function () {
         catMaterials = new Array(3);
         catEars = new Array(2);
         catMasses = new Array(4000, 2, 1);
-        catVelocities = new Array(3000000, 1000, 1500);
+        catVelocities = new Array(3000000, 2000, 1300);
         catTextures[0] = new THREE.TextureLoader().load("./Assets/Textures/Fur1.png");
         catTextures[1] = new THREE.TextureLoader().load("./Assets/Textures/Fur2.png");
         catTextures[2] = new THREE.TextureLoader().load("./Assets/Textures/Fur3.png");
         currentCat = 0;
-        var myPlayerGeometry = new SphereGeometry(2.1, 20, 20);
+        myPlayerGeometry = new SphereGeometry(1.86, 20, 20);
         catMaterials[0] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[0] });
         catMaterials[1] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[1] });
         catMaterials[2] = new LambertMaterial({ color: 0xFFffFF, map: catTextures[2] });
@@ -233,19 +240,22 @@ var game = (function () {
         playerVisual.receiveShadow = true;
         playerVisual.castShadow = true;
         playerVisual.rotation.y = THREE.Math.degToRad(0);
-        playerGeometry = new SphereGeometry(2, 20, 20);
-        playerMaterial = Physijs.createMaterial(new LambertMaterial({ color: 0xFFffFF }), 0.4, 0);
+        playerGeometry = new SphereGeometry(1.7, 20, 20);
+        var playerTransparetMaterial = new LambertMaterial({ color: 0xFFffFF });
+        playerTransparetMaterial.transparent = true;
+        playerTransparetMaterial.opacity = 0;
+        playerMaterial = Physijs.createMaterial(playerTransparetMaterial, 0.4, 0);
         player = new Physijs.SphereMesh(playerGeometry, playerMaterial, catMasses[currentCat]);
         player.name = "Player";
-        var geometry = new THREE.CylinderGeometry(0.01, 1, 3, 9);
+        var geometry = new THREE.CylinderGeometry(0.01, 0.9, 3, 9);
         var material = currentCatMaterial;
         catEars[0] = new THREE.Mesh(geometry, material);
         catEars[1] = new THREE.Mesh(geometry, material);
-        catEars[0].position.set(1, 1.47, 0);
-        catEars[1].position.set(-1, 1.47, 0);
-        player.add(playerVisual);
-        player.add(catEars[0]);
-        player.add(catEars[1]);
+        catEars[0].position.set(0.9, 1.4, 0);
+        catEars[1].position.set(-0.9, 1.4, 0);
+        player.add(playerVisual); //0
+        playerVisual.add(catEars[0]);
+        playerVisual.add(catEars[1]);
         catEars[0].receiveShadow = true;
         catEars[0].castShadow = true;
         catEars[1].receiveShadow = true;
@@ -285,7 +295,7 @@ var game = (function () {
         creatCrate(16, 8);
         //------------SETUP THE CAMER:create parent.child for camera-player-------------------------
         setupCamera();
-        player.add(camera);
+        player.add(camera); //1
         //------------------------------------------------ Collision Check--------------------------
         player.addEventListener('collision', function (coll) {
             if (coll.name === "Ground") {
@@ -315,6 +325,7 @@ var game = (function () {
         gameLoop(); // render the scene	
         scene.simulate();
         window.addEventListener('resize', onWindowResize, false);
+        createjs.Sound.play("bg_music", 0, 1, 0, 1, 0.3);
     }
     //end of init
     function createUnstableTile(groundMaterial, x, z) {
@@ -376,10 +387,10 @@ var game = (function () {
     function creatCrate(startTileX, startTileZ) {
         //var thisCrateTexture: Texture = new THREE.TextureLoader().load("./Assets/Textures/wall.png");
         var thisCrateMaterial = new THREE.MeshLambertMaterial({ color: 0xFACEee });
-        // thisCrateTexture.map = thisWallTexture;
+        //thisCrateTexture.map = thisWallTexture;
         //thisWallTexture.wrapS=THREE.RepeatWrapping;
         //thisWallTexture.wrapT=THREE.RepeatWrapping;
-        //  thisWallTexture.repeat.set(0.1,0.1);
+        //thisWallTexture.repeat.set(0.1,0.1);
         var thisCratePhysicsMaterial = Physijs.createMaterial(thisCrateMaterial, 10, 0.1);
         var thisCrateGeometry = new BoxGeometry(TILE_SIZE * 1.2, TILE_SIZE * 1.2, TILE_SIZE * 1.2);
         var crate = new Physijs.BoxMesh(thisCrateGeometry, thisCratePhysicsMaterial, 100);
@@ -502,7 +513,11 @@ var game = (function () {
             catEars[0].material = catMaterials[currentCat];
             catEars[1].material = catMaterials[currentCat];
             playerVisual.material = catMaterials[currentCat];
-            player.scale.set(1 / (currentCat + 1), 1 / (currentCat + 1), 1 / (currentCat + 1)); //!!! Quite unpredictable things happenning here
+            var newSize = 1 / (currentCat * 0.5 + 1);
+            player.scale.set(newSize, newSize, newSize); //!!! Quite unpredictable things happenning here
+            player.children.forEach(function (element) {
+                console.log("children " + element + " " + element.name);
+            });
             player.mass = catMasses[currentCat];
         }
     }
@@ -513,6 +528,12 @@ var game = (function () {
             switchCurrentCat();
             var time = performance.now();
             var delta = (time - prevTime) / 1000;
+            if (keyboardControls.switchMute) {
+                createjs.Sound.muted = mute;
+                keyboardControls.switchMute = false;
+                mute = !mute;
+                console.log("Mute is " + mute);
+            }
             if (isGrounded) {
                 player.setAngularFactor(new Vector3(0, 0, 0));
                 var direction = new Vector3(0, 0, 0);
@@ -532,7 +553,7 @@ var game = (function () {
                     if (currentCat == 0) {
                     }
                     else if (currentCat == 1) {
-                        velocity.y += catVelocities[currentCat] * 10 * delta;
+                        velocity.y += catVelocities[currentCat] * 5 * delta;
                         if (player.position.y > 4) {
                             isGrounded = false;
                         }

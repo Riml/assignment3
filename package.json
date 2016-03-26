@@ -1,7 +1,7 @@
 {
-  "name": "comp392-lesson9",
+  "name": "comp392-a3",
   "version": "1.0.0",
-  "description": "COMP392-Lesson 9 for Centennial College",
+  "description": "COMP392 - 'lost kittens' maze games",
   "main": "game.js",
   "dependencies": {
     "typescript": "^1.8.7"
@@ -18,12 +18,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CentennialCollege/COMP392-Lesson9.git"
+    "url": "git+https://github.com/Riml/assignment3.git"
   },
-  "author": "Tom Tsiliopoulos",
+  "author": "Ilmir Taychinov",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/CentennialCollege/COMP392-Lesson9/issues"
+    "url": "https://github.com/Riml/assignment3/issues"
   },
-  "homepage": "https://github.com/CentennialCollege/COMP392-Lesson9#readme"
+  "homepage": "https://github.com/Riml/assignment3#readme"
 }
